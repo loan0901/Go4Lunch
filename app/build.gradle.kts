@@ -61,4 +61,10 @@ dependencies {
     implementation("com.google.maps.android:android-maps-utils:1.3.1")
 
     implementation("com.google.android.libraries.places:places:3.3.0")
+
+    //Retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+
+    //Gson
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 }

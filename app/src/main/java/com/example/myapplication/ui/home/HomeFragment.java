@@ -23,6 +23,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myapplication.MainActivity;
+import com.example.myapplication.Model.Location;
+import com.example.myapplication.Model.SearchRequestModel;
+import com.example.myapplication.PlacesService;
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentHomeBinding;
 
@@ -50,6 +53,12 @@ import com.google.maps.android.SphericalUtil;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
@@ -147,6 +156,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    private void getLastLocation(){
+
+    }
+
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         googleMap = map;
@@ -156,6 +169,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         checkPermission();
         configureLocationButton();
+        testSearchRestaurant();
     }
 
     private void configureLocationButton(){
@@ -168,8 +182,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void findNearbyRestaurants() {
-        // TODO : ????????????????????????????
+
     }
+
     
 
     @Override
@@ -178,4 +193,44 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         binding = null;
     }
 
+    public static void testSearchRestaurant() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://places.googleapis.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PlacesService service = retrofit.create(PlacesService.class);
+
+        // Construisez votre objet de requête ici
+        SearchRequestModel request = new SearchRequestModel();
+        request.includedTypes = Arrays.asList("restaurant");
+        request.maxResultCount = 10;
+        request.locationRestriction = new SearchRequestModel.LocationRestriction();
+        request.locationRestriction.circle = new SearchRequestModel.Circle();
+        request.locationRestriction.circle.center = new SearchRequestModel.Center();
+        request.locationRestriction.circle.center.latitude = 37.7937;
+        request.locationRestriction.circle.center.longitude = -122.3965;
+        request.locationRestriction.circle.radius = 500.0;
+
+        // Effectuez la requête
+        Call<Void> call = service.searchNearby(request);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // Gérez la réponse ici
+                    System.out.println(response.message());
+
+                } else {
+                    System.out.println("Request failed with error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+    }
 }
