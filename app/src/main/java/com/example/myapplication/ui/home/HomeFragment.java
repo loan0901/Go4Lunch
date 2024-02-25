@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.Model.Location;
 import com.example.myapplication.Model.SearchRequestModel;
+import com.example.myapplication.PlacesResponse;
 import com.example.myapplication.PlacesService;
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentHomeBinding;
@@ -50,10 +51,12 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.maps.android.SphericalUtil;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -96,8 +99,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     private void checkPermission(){
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            testSearchRestaurant(); //TODO : Remove me
 
-            showLastLocation();
+            //showLastLocation();
 
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
@@ -162,6 +166,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
+        System.out.println("Map is ready !");
+
         googleMap = map;
 
         MapStyleOptions styleOptions = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style);
@@ -213,14 +219,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         request.locationRestriction.circle.radius = 500.0;
 
         // Effectuez la requête
-        Call<Void> call = service.searchNearby(request);
+        System.out.println("Requesting results...");
+        Call<ResponseBody> call = service.searchNearby(request);
 
-        call.enqueue(new Callback<Void>() {
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     // Gérez la réponse ici
-                    System.out.println(response.message());
+                    try {
+                        System.out.println(response.body().string());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
 
                 } else {
                     System.out.println("Request failed with error code: " + response.code());
@@ -228,7 +239,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 t.printStackTrace();
             }
         });
