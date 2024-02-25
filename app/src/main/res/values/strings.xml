@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="open_drawer">open</string>
+    <string name="close_drawer">close</string>
+    <string name="openDrawerButton">openDrawerButton</string>
+    <string name="searchButton">searchButton</string>
+    <string name="open_drawer_button">open drawer button</string>
+    <string name="search_button">search button</string>
+    <string name="give_location_permission">give location permission</string>
+
+    //KEY GOOGLE MAPS
+    <string name="google_maps_key">AIzaSyAKXaQzBrV6EIHVBliBVVYjUsreEkiY7uc</string>
+    <string name="connection_succeed">Connection réussi</string>
+    <string name="error_authentication_canceled">connection annulée</string>
+    <string name="error_no_internet">erreur de connction internet</string>
+    <string name="error_unknown_error">erreur</string>
+
+    <string name="default_web_client_id" translatable="false">webClientId.apps.googleusercontent.com</string>
+</resources>
