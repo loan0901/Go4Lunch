@@ -19,5 +19,5 @@ public interface PlacesService {
             "X-Goog-FieldMask: places.displayName,places.location,places.internationalPhoneNumber,places.googleMapsUri,places.websiteUri,places.formattedAddress,places.rating,places.regularOpeningHours.weekdayDescriptions"
     })
     @POST("v1/places:searchNearby")
-    Call<ResponseBody> searchNearby(@Body SearchRequestModel request);
+    Call<PlacesResponse> searchNearby(@Body SearchRequestModel request);
 }

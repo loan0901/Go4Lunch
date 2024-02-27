@@ -6,5 +6,5 @@ import java.util.List;
 
 public class PlacesResponse {
 
-    List<Place> places;
+    public List<Place> places;
 }

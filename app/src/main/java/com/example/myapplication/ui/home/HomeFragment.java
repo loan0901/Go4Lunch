@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -18,12 +19,14 @@ import android.widget.ImageButton;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myapplication.MainActivity;
 import com.example.myapplication.Model.Location;
+import com.example.myapplication.Model.Place;
 import com.example.myapplication.Model.SearchRequestModel;
 import com.example.myapplication.PlacesResponse;
 import com.example.myapplication.PlacesService;
@@ -42,7 +45,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.model.PlaceTypes;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -51,10 +53,10 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.maps.android.SphericalUtil;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -71,97 +73,144 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private FragmentHomeBinding binding;
     private GoogleMap googleMap;
 
+    private static LatLng userLatLng;
+
+    public static PlacesResponse currentResults;
+
     private PlacesClient placesClient;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         //ViewModelProvider
         HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        //ViewBinding
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-
-        binding.mapView.onCreate(null);
-        binding.mapView.onResume();
-        binding.mapView.getMapAsync(this);
-
-        // Initialize Places.
-        Places.initialize(requireContext(), getString(R.string.google_maps_key));
-
-        // Create a new PlacesClient instance.
-        placesClient = Places.createClient(requireContext());
+        //Initialize
+        initializeViewBinding(inflater, container);
+        initializeLocationServices();
+        initializeMap();
+        initializePlacesClient();
 
         return binding.getRoot();
     }
 
-    private void checkPermission(){
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            testSearchRestaurant(); //TODO : Remove me
+    private void initializeViewBinding(LayoutInflater inflater, ViewGroup container) {
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
+    }
 
-            //showLastLocation();
+    private void initializeLocationServices() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+    }
+
+    private void initializeMap() {
+        binding.mapView.onCreate(null);
+        binding.mapView.onResume();
+        binding.mapView.getMapAsync(this);
+    }
+
+    private void initializePlacesClient() {
+        Places.initialize(requireContext(), getString(R.string.google_maps_key));
+        placesClient = Places.createClient(requireContext());
+    }
+
+    private void checkPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            onPermissionGranted();
 
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setMessage("Cette application nécessite l'accès à votre position pour fonctionner correctement.")
-                    .setTitle("Permission recommandée")
-                    .setCancelable(false)
-                    .setPositiveButton("OK", (dialogInterface, i) -> {
-                        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-                        dialogInterface.dismiss();
-                    })
-                    .setNegativeButton("annuler", (dialogInterface, i) -> dialogInterface.dismiss());
-            builder.show();
+
+            showRationaleDialog();
 
         } else {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+
+            requestLocationPermission();
         }
     }
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted ->{
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
         if (isGranted) {
 
-            checkPermission();
+            onPermissionGranted();
 
-        } else if (! shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setMessage("Pour afficher la carte autour de vous l'application nécessite l'accès à votre position que vous avez refusée. vous pouvez toujours l'autoriser dans les paramètres.")
-                    .setTitle("permission requise")
-                    .setCancelable(false)
-                    .setNegativeButton("annuler", (dialogInterface, i) -> dialogInterface.dismiss())
-                    .setPositiveButton("parametre", (dialogInterface, i) -> {
-                        Intent settingIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
-                        settingIntent.setData(uri);
-                        startActivity(settingIntent);
+        } else if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                        dialogInterface.dismiss();
-                    });
-            builder.show();
+            showSettingsDialog();
 
         } else {
+
             checkPermission();
         }
     });
 
+    private void onPermissionGranted() {
 
-    private void showLastLocation(){
+        getUserLatLng(latLng -> {
+            showLastLocation(latLng);
+            testSearchRestaurant(latLng);
+        });
+    }
+
+    private void requestLocationPermission() {
+        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+
+    private void showRationaleDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setMessage("Cette application nécessite l'accès à votre position pour fonctionner correctement.")
+                .setTitle("Permission recommandée")
+                .setCancelable(false)
+                .setPositiveButton("OK", (dialogInterface, i) -> requestLocationPermission())
+                .setNegativeButton("Annuler", (dialogInterface, i) -> dialogInterface.dismiss());
+        builder.show();
+    }
+
+    private void showSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setMessage("Pour afficher la carte autour de vous, l'application nécessite l'accès à votre position que vous avez refusée. Vous pouvez toujours l'autoriser dans les paramètres.")
+                .setTitle("Permission requise")
+                .setCancelable(false)
+                .setNegativeButton("Annuler", (dialogInterface, i) -> dialogInterface.dismiss())
+                .setPositiveButton("Paramètres", (dialogInterface, i) -> {
+                    openAppSettings();
+                    dialogInterface.dismiss();
+                });
+        builder.show();
+    }
+
+    private void openAppSettings() {
+        Intent settingIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+        settingIntent.setData(uri);
+        startActivity(settingIntent);
+    }
+
+    private void showLastLocation(LatLng position) {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
-                if (location != null) {
-                    LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, DEFAULT_ZOOM));
 
-                    findNearbyRestaurants();
-                }
-            });
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
         }
     }
 
-    private void getLastLocation(){
+    public interface LatLngCallback {
+        void onResult(LatLng latLng);
+    }
 
+    public void getUserLatLng(LatLngCallback callback) {
+        if (userLatLng != null) {
+            callback.onResult(userLatLng);
+        } else if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
+                if (location != null) {
+                    userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                } else {
+                    userLatLng = new LatLng(43.3, 5.4); // Valeur par défaut
+                }
+                callback.onResult(userLatLng);
+            });
+        } else {
+            userLatLng = new LatLng(43.3, 5.4); // Valeur par défaut
+            callback.onResult(userLatLng);
+        }
     }
 
     @Override
@@ -170,15 +219,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         googleMap = map;
 
-        MapStyleOptions styleOptions = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style);
-        googleMap.setMapStyle(styleOptions);
-
+        configureMapStyle();
         checkPermission();
         configureLocationButton();
-        testSearchRestaurant();
     }
 
-    private void configureLocationButton(){
+    private void configureLocationButton() {
         MainActivity mainActivity = (MainActivity) getActivity();
         ImageButton imageButtonPosition = mainActivity.findViewById(R.id.locationButton);
 
@@ -187,11 +233,11 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void findNearbyRestaurants() {
-
+    private void configureMapStyle() {
+        MapStyleOptions styleOptions = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style);
+        googleMap.setMapStyle(styleOptions);
     }
 
-    
 
     @Override
     public void onDestroyView() {
@@ -199,7 +245,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         binding = null;
     }
 
-    public static void testSearchRestaurant() {
+    public void testSearchRestaurant(LatLng position) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://places.googleapis.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -214,23 +260,29 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         request.locationRestriction = new SearchRequestModel.LocationRestriction();
         request.locationRestriction.circle = new SearchRequestModel.Circle();
         request.locationRestriction.circle.center = new SearchRequestModel.Center();
-        request.locationRestriction.circle.center.latitude = 37.7937;
-        request.locationRestriction.circle.center.longitude = -122.3965;
+        request.locationRestriction.circle.center.latitude = position.latitude;
+        request.locationRestriction.circle.center.longitude = position.longitude;
         request.locationRestriction.circle.radius = 500.0;
 
         // Effectuez la requête
         System.out.println("Requesting results...");
-        Call<ResponseBody> call = service.searchNearby(request);
+        Call<PlacesResponse> call = service.searchNearby(request);
 
-        call.enqueue(new Callback<ResponseBody>() {
+        call.enqueue(new Callback<PlacesResponse>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
                 if (response.isSuccessful()) {
                     // Gérez la réponse ici
-                    try {
-                        System.out.println(response.body().string());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    System.out.println("got restaurant responses");
+
+                    currentResults = response.body();
+
+                    //TODO : remove all pins
+                    for (Place place : currentResults.places) {
+                        LatLng pos = new LatLng(place.getLocation().getLatitude(), place.getLocation().getLongitude());
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(pos)
+                                .title(place.getDisplayName().getText()));
                     }
 
                 } else {
@@ -239,7 +291,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<PlacesResponse> call, Throwable t) {
                 t.printStackTrace();
             }
         });
