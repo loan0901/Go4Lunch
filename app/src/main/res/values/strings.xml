@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">My Application</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_Workmates">Workmates</string>
+    <string name="title_list_view">List View</string>
+    <string name="title_map_view">Map View</string>
     <string name="open_drawer">open</string>
     <string name="close_drawer">close</string>
     <string name="openDrawerButton">openDrawerButton</string>
@@ -11,12 +11,23 @@
     <string name="search_button">search button</string>
     <string name="give_location_permission">give location permission</string>
 
-    //KEY GOOGLE MAPS
-    <string name="google_maps_key">AIzaSyAKXaQzBrV6EIHVBliBVVYjUsreEkiY7uc</string>
     <string name="connection_succeed">Connection réussi</string>
     <string name="error_authentication_canceled">connection annulée</string>
     <string name="error_no_internet">erreur de connction internet</string>
     <string name="error_unknown_error">erreur</string>
 
+    //LOGIN
     <string name="default_web_client_id" translatable="false">webClientId.apps.googleusercontent.com</string>
+
+    //FACEBOOK
+    <string name="facebook_app_id">731143048999870</string>
+    <string name="fb_login_protocol_scheme">fb731143048999870</string>
+    <string name="facebook_client_token">0e4f7b372b8ace5f231f5035e7dfd793</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
 </resources>

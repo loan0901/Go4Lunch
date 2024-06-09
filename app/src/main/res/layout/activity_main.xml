@@ -67,21 +67,22 @@
                     android:layout_weight="1"
                     android:gravity="center"/>
 
-                <ImageButton
-                    android:id="@+id/locationButton"
-                    android:layout_width="wrap_content"
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteTextView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_location_on_24"
-                    android:backgroundTint="?attr/colorPrimary"
-                    android:contentDescription="@string/give_location_permission" />
+                    android:hint="Search..."
+                    android:visibility="gone"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true"/>
 
                 <ImageButton
                     android:id="@+id/searchButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_search_24"
-                    android:backgroundTint="?attr/colorPrimary"
-                    android:contentDescription="@string/search_button"/>
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_gravity="end|center"/>
 
             </LinearLayout>
 
@@ -96,30 +97,114 @@
         android:layout_height="match_parent"
         android:layout_gravity="start">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <Button
-                android:id="@+id/button1"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/drawer_container"
+            android:layout_width="match_parent"
+            android:layout_height="220dp">
+
+            <ImageView
+                android:id="@+id/imageViewDrawer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/background_image_login"
+                android:scaleType="centerCrop"/>
+
+            <TextView
+                android:id="@+id/drawerTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Button 1" />
+                app:layout_constraintTop_toTopOf="@id/imageViewDrawer"
+                android:gravity="center"
+                android:text="Go4Lunch"
+                android:textStyle="bold"
+                android:textSize="45sp"
+                android:textColor="#CCCCCC"
+                android:layout_marginTop="24dp"/>
 
-            <Button
-                android:id="@+id/button2"
-                android:layout_width="match_parent"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardViewProfilePicture"
+                app:layout_constraintBottom_toBottomOf="@id/imageViewDrawer"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginBottom="24dp"
+                android:layout_marginStart="12dp"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                android:elevation="12dp"
+                app:cardCornerRadius="40dp"
+                android:layout_gravity="center_horizontal"
+                android:innerRadius="0dp"
+                android:shape="ring"
+                android:thicknessRatio="1.9">
+                <ImageView
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:id="@+id/profilePictureImageView"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true">
+                </ImageView>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/profileName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Button 2" />
+                app:layout_constraintStart_toEndOf="@+id/cardViewProfilePicture"
+                app:layout_constraintTop_toTopOf="@id/cardViewProfilePicture"
+                app:layout_constraintBottom_toTopOf="@id/textviewMail"
+                android:layout_marginStart="8dp"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#CCCCCC"/>
 
-            <Button
-                android:id="@+id/button3"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/textviewMail"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Button 3" />
+                app:layout_constraintStart_toEndOf="@+id/cardViewProfilePicture"
+                app:layout_constraintTop_toBottomOf="@id/profileName"
+                app:layout_constraintBottom_toBottomOf="@id/cardViewProfilePicture"
+                android:layout_marginStart="8dp"
+                android:textSize="12sp"
+                android:textColor="#CCCCCC"/>
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/drawer_container"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/lunchButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="25dp"
+                    android:text="YOUR LUNCH"/>
+
+                <Button
+                    android:id="@+id/settingButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="25dp"
+                    android:text="SETTINGS"/>
+
+                <Button
+                    android:id="@+id/logoutButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="25dp"
+                    android:text="LOGOUT"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
 
     </com.google.android.material.navigation.NavigationView>
 
