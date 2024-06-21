@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.MapFragment;
+package com.example.myapplication.ui.view;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -6,11 +6,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,21 +22,21 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myapplication.DetailFragment;
-import com.example.myapplication.GooglePlacesApi;
-import com.example.myapplication.Model.Circle;
 import com.example.myapplication.Model.CustomPlace;
-import com.example.myapplication.Model.LocationRestriction;
-import com.example.myapplication.Model.NearbySearchRequest;
-import com.example.myapplication.Model.PlacesResponse;
 import com.example.myapplication.Model.Restaurant;
-import com.example.myapplication.SharedPlaceViewModel;
+import com.example.myapplication.Repository.FirestoreRepository;
+import com.example.myapplication.Repository.GooglePlacesRepository;
+import com.example.myapplication.databinding.FragmentMapBinding;
+import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.viewModel.GooglePlaceViewModel;
 import com.example.myapplication.R;
-import com.example.myapplication.RetrofitClient;
-import com.example.myapplication.databinding.FragmentHomeBinding;
 
 import com.example.myapplication.service.CustomMarkerService;
-import com.example.myapplication.service.FirestoreUtils;
+import com.example.myapplication.viewModel.RestaurantViewModel;
+import com.example.myapplication.viewModel.UserViewModel;
+import com.example.myapplication.viewModel.ViewModelFactory.GooglePlaceViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.RestaurantViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.UserViewModelFactory;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -52,36 +54,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
-    private SharedPlaceViewModel sharedplaceViewModel;
-
     private static final float DEFAULT_ZOOM = 18f;
-    private FusedLocationProviderClient fusedLocationClient;
-    private FragmentHomeBinding binding;
-    private GoogleMap googleMap;
-    private GooglePlacesApi googlePlacesApi;
-    private FirestoreUtils firestoreUtils;
-    private final Map<String, Marker> markerMap = new HashMap<>();
+    private static final long LOADING_TIMEOUT = 10000L; // 10 seconds
 
+    private FusedLocationProviderClient fusedLocationClient;
+    private FragmentMapBinding fragmentMapBinding;
+    private GoogleMap googleMap;
+    private final Map<String, Marker> markerMap = new HashMap<>();
     private static LatLng userLatLng;
     private PlacesClient placesClient;
+    private ProgressBar progressBar;
+
+    private GooglePlaceViewModel googlePlaceViewModel;
+    private RestaurantViewModel restaurantViewModel;
+    private UserViewModel userViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        // Initialize ViewModel
-        sharedplaceViewModel = new ViewModelProvider(requireActivity()).get(SharedPlaceViewModel.class);
+        // Initialize the repository
+        GooglePlacesRepository googlePlacesRepository = new GooglePlacesRepository(RetrofitClient.getApiService());
+        FirestoreRepository firestoreRepository = new FirestoreRepository();
 
-        // Initialize GooglePlaceCall
-        googlePlacesApi = RetrofitClient.getApiService();
+        // Initialize the ViewModel with Factory
+        GooglePlaceViewModelFactory factory = new GooglePlaceViewModelFactory(googlePlacesRepository);
+        RestaurantViewModelFactory restaurantViewModelFactory = new RestaurantViewModelFactory(firestoreRepository);
+        UserViewModelFactory userViewModelFactory = new UserViewModelFactory(firestoreRepository);
 
-        // Initialize Firestore utilities
-        firestoreUtils = new FirestoreUtils();
+        googlePlaceViewModel = new ViewModelProvider(requireActivity(), factory).get(GooglePlaceViewModel.class);
+        restaurantViewModel = new ViewModelProvider(requireActivity(), restaurantViewModelFactory).get(RestaurantViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity(), userViewModelFactory).get(UserViewModel.class);
 
         initializeViewBinding(inflater, container);
         initializeLocationServices();
@@ -90,16 +94,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         showPlaceAfterSearch();
 
         // Display nearby restaurants if already load
-        if (sharedplaceViewModel.getCombinedPlaces() != null) {
-            displayNearbyRestaurant();
-        }
+        displayNearbyRestaurant();
 
-        return binding.getRoot();
+        return fragmentMapBinding.getRoot();
     }
 
     // Initialize view binding
     private void initializeViewBinding(LayoutInflater inflater, ViewGroup container) {
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        fragmentMapBinding = FragmentMapBinding.inflate(inflater, container, false);
+        progressBar = fragmentMapBinding.progressBar;
     }
 
     // Initialize location services
@@ -109,9 +112,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     // Initialize map
     private void initializeMap() {
-        binding.mapView.onCreate(null);
-        binding.mapView.onResume();
-        binding.mapView.getMapAsync(this);
+        fragmentMapBinding.mapView.onCreate(null);
+        fragmentMapBinding.mapView.onResume();
+        fragmentMapBinding.mapView.getMapAsync(this);
     }
 
     // Initialize Google Places client
@@ -122,7 +125,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     // Show place on map after search
     private void showPlaceAfterSearch(){
-        sharedplaceViewModel.getSelectedRestaurantName().observe(getViewLifecycleOwner(), selectedRestaurantName -> {
+        restaurantViewModel.getSelectedRestaurantName().observe(getViewLifecycleOwner(), selectedRestaurantName -> {
             if (selectedRestaurantName != null) {
                 Marker marker = markerMap.get(selectedRestaurantName);
                 if (marker != null){
@@ -167,7 +170,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         getUserLatLng(this::showLastLocation);
 
         // if the "customPlace" have not yet been loaded, load them
-        if (sharedplaceViewModel.getPlaces().getValue() == null || sharedplaceViewModel.getPlaces().getValue().isEmpty()) {
+        if (googlePlaceViewModel.getPlaces().getValue() == null || googlePlaceViewModel.getPlaces().getValue().isEmpty()) {
             loadNearbyRestaurants();
         } else {
             // else, display the "customPlace" with ViewModel
@@ -217,9 +220,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private void showLastLocation(LatLng position) {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
 
-            sharedplaceViewModel.setCurrentUserLatLng(position);
+            userViewModel.setCurrentUserLatLng(position);
         }
     }
 
@@ -269,7 +272,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     // Configure the location button : get current location and display nearby restaurant on map
     private void configureLocationButton() {
-        binding.fabLocation.setOnClickListener(view -> {
+        fragmentMapBinding.fabLocation.setOnClickListener(view -> {
             getUserLatLng(this::showLastLocation);
             checkPermissionAndShowNearbyRestaurant();
         });
@@ -283,73 +286,57 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     // Load nearby restaurants and add them to the View Model
     private void loadNearbyRestaurants() {
+        // Show loading indicator
+        progressBar.setVisibility(View.VISIBLE);
+
         // get restaurants with only the information that is necessary
         String apiKey = getString(R.string.google_maps_key);
         String fieldMask = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.regularOpeningHours,places.photos,places.internationalPhoneNumber,places.websiteUri";
         double radius = 500.0;
         int maxResultCount = 5;
         List<String> includedTypes = Collections.singletonList("restaurant");
-
         getUserLatLng(latLng -> {
-            LatLng center = new LatLng(latLng.latitude, latLng.longitude);
-            Circle circle = new Circle(center, radius);
-            LocationRestriction locationRestriction = new LocationRestriction(circle);
-            NearbySearchRequest request = new NearbySearchRequest(includedTypes, maxResultCount, locationRestriction);
+            // add all the CustomPlace to the ViewModel & data base
+            googlePlaceViewModel.loadNearbyPlaces(apiKey, latLng.latitude, latLng.longitude, radius, maxResultCount, includedTypes, fieldMask, restaurantViewModel.getFirestoreRepository());
 
-            Call<PlacesResponse> call = googlePlacesApi.getNearbyPlaces(request, apiKey, fieldMask);
-            call.enqueue(new Callback<PlacesResponse>() {
-                @Override
-                public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
-                    if (response.isSuccessful()) {
-                        PlacesResponse placesResponse = response.body();
-                        List<CustomPlace> nearbyRestaurants = placesResponse.places;
+            // Set a timeout for hiding the loading indicator in case of no results
+            new Handler(Looper.getMainLooper()).postDelayed(() -> progressBar.setVisibility(View.GONE), LOADING_TIMEOUT);
+        });
+    }
 
-                        // add all the CustomPlace to the ViewModel
-                        sharedplaceViewModel.setPlaces(nearbyRestaurants);
-
-                        //create a restaurant in the database if it does not exist
-                        if (nearbyRestaurants != null) {
-                            for (CustomPlace place : nearbyRestaurants) {
-                                firestoreUtils.checkOrCreateRestaurant(place.placeId, 0, null);
-                            }
-                        }
+    // Display nearby restaurants on the map. automatically updated when "customPlace" or "Restaurant" is changed
+    private void displayNearbyRestaurant(){
+        googlePlaceViewModel.getPlaces().observe(getViewLifecycleOwner(), places -> {
+            restaurantViewModel.getRestaurantList().observe(getViewLifecycleOwner(), restaurantList -> {
+                if (places != null) {
+                    clearMarkers();
+                    for (CustomPlace place : places) {
+                        // add a marker on the map
+                        placePin(place);
                     }
-                }
-                @Override
-                public void onFailure(Call<PlacesResponse> call, Throwable t) {
-                    Log.e("API_ERROR", "Request failed", t);
+                    // Hide loading indicator after places are displayed
+                    progressBar.setVisibility(View.GONE);
                 }
             });
         });
     }
 
-    // Display nearby restaurants on the map. automatically updated when a new "customPlace" is added
-    private void displayNearbyRestaurant(){
-        sharedplaceViewModel.getCombinedPlaces().observe(getViewLifecycleOwner(), places -> {
-            if (places != null) {
-                clearMarkers();
-                for (CustomPlace place : places) {
-                    // add a marker on the map
-                    placePin(place);
-                }
-            }
-        });
-    }
-
     // Add a marker for the place on the map
     private void placePin(CustomPlace place){
-        Restaurant restaurant = sharedplaceViewModel.getRestaurantById(place.placeId);
+        Restaurant restaurant = restaurantViewModel.getRestaurantById(place.placeId);
         Marker marker = googleMap.addMarker(new MarkerOptions()
                 .position(place.location)
                 .title(place.displayName.value));
         // if the restaurant is selected by at least one user, change the color
-        if (restaurant.getUserIdSelected() == null || restaurant.getUserIdSelected().isEmpty()){
-            marker.setIcon(CustomMarkerService.getMarkerIconFromVector(requireContext(),R.drawable.custom_marker_red));
-        } else {
-            marker.setIcon(CustomMarkerService.getMarkerIconFromVector(requireContext(),R.drawable.custom_marker_green));
-        }
+        if (restaurant != null) {
+            if (restaurant.getUserIdSelected() == null || restaurant.getUserIdSelected().isEmpty()) {
+                marker.setIcon(CustomMarkerService.getMarkerIconFromVector(requireContext(), R.drawable.custom_marker_red));
+            } else {
+                marker.setIcon(CustomMarkerService.getMarkerIconFromVector(requireContext(), R.drawable.custom_marker_green));
+            }
             marker.setTag(place.placeId);
             markerMap.put(place.displayName.value, marker);
+        }
     }
 
     // Open the place detail by marker ID
@@ -358,7 +345,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             String placeId = (String) marker.getTag();
             if (placeId != null) {
                 // when a marker is clicked, pass it to the viewModel and open DetailActivity
-                sharedplaceViewModel.setPlaceForDetailFragmentById(placeId);
+                googlePlaceViewModel.setPlaceForDetailFragmentById(placeId);
                 DetailFragment detailBottomSheetFragment = new DetailFragment();
                 detailBottomSheetFragment.show(getParentFragmentManager(), "DetailFragment");
             }
@@ -378,6 +365,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        fragmentMapBinding = null;
     }
 }

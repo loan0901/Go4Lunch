@@ -1,4 +1,4 @@
-package com.example.myapplication.service;
+package com.example.myapplication.Repository;
 
 import android.util.Log;
 
@@ -18,14 +18,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FirestoreUtils {
+public class FirestoreRepository {
 
     private final FirebaseFirestore db;
     private ListenerRegistration userListenerRegistration;
     private ListenerRegistration restaurantListenerRegistration;
 
     // Constructor for FirestoreUtils. Initializes Firestore instance.
-    public FirestoreUtils() {
+    public FirestoreRepository() {
         db = FirebaseFirestore.getInstance();
     }
 
@@ -66,7 +66,6 @@ public class FirestoreUtils {
                 .addOnSuccessListener(aVoid -> Log.d("Firestore", "User created successfully"))
                 .addOnFailureListener(e -> Log.w("Firestore", "Error creating user", e));
     }
-
 
     public interface OnUsersRetrievedListener {
         void onUsersRetrieved(List<User> userList);

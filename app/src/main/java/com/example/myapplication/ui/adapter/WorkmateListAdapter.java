@@ -1,6 +1,5 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.adapter;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -13,8 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
-import com.example.myapplication.Model.CustomPlace;
 import com.example.myapplication.Model.User;
+import com.example.myapplication.R;
 
 import java.util.ArrayList;
 import java.util.List;

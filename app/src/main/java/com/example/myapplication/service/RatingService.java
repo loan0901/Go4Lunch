@@ -1,19 +1,8 @@
 package com.example.myapplication.service;
 
 import com.example.myapplication.Model.Restaurant;
-import com.example.myapplication.Model.User;
-import com.example.myapplication.SharedPlaceViewModel;
-
-import java.util.List;
 
 public class RatingService {
-
-    private final SharedPlaceViewModel sharedPlaceViewModel;
-
-    // Constructor for RatingService.
-    public RatingService(SharedPlaceViewModel sharedPlaceViewModel) {
-        this.sharedPlaceViewModel = sharedPlaceViewModel;
-    }
 
     // Interface for a listener to handle the computed rating.
     public interface OnRatingComputedListener {
@@ -24,24 +13,18 @@ public class RatingService {
     /**
      * Computes the rating of a restaurant based on the number of likes and total users.
      *
-     * @param restaurantId The ID of the restaurant whose rating is to be computed.
+     * @param restaurant The restaurant whose rating is to be computed.
+     * @param userCount The total number of users.
      * @param listener The listener to handle the computed rating or any error.
      */
-    public void computeRating(String restaurantId, OnRatingComputedListener listener) {
-        List<Restaurant> restaurantList = sharedPlaceViewModel.getRestaurantList().getValue();
-        List<User> userList = sharedPlaceViewModel.getUserList().getValue();
-
-        if (restaurantList != null && userList != null) {
-            Restaurant restaurant = sharedPlaceViewModel.getRestaurantById(restaurantId);
-            if (restaurant != null) {
-                int likeCount = restaurant.getLikeCount();
-                int userCount = userList.size();
-                int rating = calculateRating(likeCount, userCount);
-                listener.onRatingComputed(rating);
-            } else {
-                listener.onError(new Exception("Restaurant not found"));
-            }
+    public void computeRating(Restaurant restaurant, int userCount, OnRatingComputedListener listener) {
+        // Check if the restaurant is not null and the user count is not zero.
+        if (restaurant != null && userCount != 0) {
+            int likeCount = restaurant.getLikeCount();
+            int rating = calculateRating(likeCount, userCount);
+            listener.onRatingComputed(rating);
         } else {
+            // Return an error through the listener if the restaurant is null or user count is zero.
             listener.onError(new Exception("Restaurant list or user list is not available"));
         }
     }

@@ -3,7 +3,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".DetailFragment"
+    tools:context=".ui.view.DetailFragment"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -47,58 +47,62 @@
         android:layout_width="match_parent"
         android:layout_height="90dp"
         app:layout_constraintTop_toBottomOf="@id/place_image"
-        android:background="@color/purple_500">
+        android:background="#E14C2F">
 
         <TextView
             android:id="@+id/restaurantName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/layoutInfo"
+            app:layout_constraintEnd_toEndOf="@id/twoStarsDetail"
             android:layout_margin="16dp"
             android:textSize="18sp"
             android:text="Le Restaurant"
+            android:singleLine="true"
             android:textColor="@color/white"/>
-
-        <ImageView
-            android:id="@+id/oneStarsDetail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/restaurantName"
-            app:layout_constraintTop_toTopOf="@id/restaurantName"
-            app:layout_constraintBottom_toBottomOf="@id/restaurantName"
-            android:layout_marginStart="12dp"
-            android:src="@drawable/baseline_star_count_24"
-            android:visibility="gone"/>
-
-        <ImageView
-            android:id="@+id/twoStarsDetail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/oneStarsDetail"
-            app:layout_constraintTop_toTopOf="@id/restaurantName"
-            app:layout_constraintBottom_toBottomOf="@id/restaurantName"
-            android:src="@drawable/baseline_star_count_24"
-            android:visibility="gone"/>
 
         <ImageView
             android:id="@+id/threeStarsDetail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/twoStarsDetail"
-            app:layout_constraintTop_toTopOf="@id/restaurantName"
-            app:layout_constraintBottom_toBottomOf="@id/restaurantName"
+            app:layout_constraintEnd_toStartOf="@id/twoStarsDetail"
+            app:layout_constraintTop_toTopOf="@id/twoStarsDetail"
+            app:layout_constraintBottom_toBottomOf="@id/twoStarsDetail"
+            android:layout_marginStart="12dp"
             android:src="@drawable/baseline_star_count_24"
-            android:visibility="gone"/>
+            android:visibility="invisible"/>
+
+        <ImageView
+            android:id="@+id/twoStarsDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/oneStarsDetail"
+            app:layout_constraintTop_toTopOf="@id/oneStarsDetail"
+            app:layout_constraintBottom_toBottomOf="@id/oneStarsDetail"
+            android:src="@drawable/baseline_star_count_24"
+            android:visibility="invisible"/>
+
+        <ImageView
+            android:id="@+id/oneStarsDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:src="@drawable/baseline_star_count_24"
+            android:layout_margin="12dp"
+            android:visibility="invisible"/>
 
         <TextView
             android:id="@+id/restaurantAddress"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/restaurantName"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/threeStarsDetail"
             android:layout_margin="16dp"
             android:textColor="@color/white"
+            android:singleLine="true"
             android:text="68 rue de la ville"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -116,11 +120,11 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:drawableTop="@drawable/baseline_call_48"
-            android:backgroundTint="@color/white"
+            android:drawableTint="#E14C2F"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
             android:text="CALL"
-            android:textColor="@color/black"
+            android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
 
@@ -130,11 +134,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:drawableTop="@drawable/baseline_star_unliked_48"
-            android:backgroundTint="@color/white"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
             android:text="LIKE"
-            android:textColor="@color/black"
+            android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
 
@@ -144,10 +147,11 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:drawableTop="@drawable/internet_icon_48"
+            android:drawableTint="#E14C2F"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
             android:text="WEBSITE"
-            android:textColor="@color/black"
+            android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
 

@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.myapplication.ui.MapFragment.MapFragment"
+        android:name="com.example.myapplication.ui.view.MapFragment"
         android:label="@string/title_map_view"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.example.myapplication.ui.RestaurantListFragment.RestaurantListFragment"
+        android:name="com.example.myapplication.ui.view.RestaurantListFragment"
         android:label="@string/title_list_view"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_restaurant_list" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.example.myapplication.ui.coworkerListFragment.CoworkerListFragment"
+        android:name="com.example.myapplication.ui.view.CoworkerListFragment"
         android:label="@string/title_Workmates"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_coworker" />
 </navigation>

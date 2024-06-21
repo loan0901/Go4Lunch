@@ -1,11 +1,9 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.view;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -24,13 +22,23 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.example.myapplication.Repository.FirestoreRepository;
+import com.example.myapplication.Repository.GooglePlacesRepository;
+import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.ui.adapter.DetailUserAdapter;
 import com.example.myapplication.Model.Restaurant;
 import com.example.myapplication.Model.User;
+import com.example.myapplication.R;
+import com.example.myapplication.viewModel.GooglePlaceViewModel;
 import com.example.myapplication.databinding.FragmentDetailBinding;
 import com.example.myapplication.service.AddressService;
-import com.example.myapplication.service.FirestoreUtils;
 import com.example.myapplication.service.PhotoService;
 import com.example.myapplication.service.RatingService;
+import com.example.myapplication.viewModel.RestaurantViewModel;
+import com.example.myapplication.viewModel.UserViewModel;
+import com.example.myapplication.viewModel.ViewModelFactory.GooglePlaceViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.RestaurantViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.UserViewModelFactory;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -43,35 +51,47 @@ import java.util.List;
 
 public class DetailFragment extends BottomSheetDialogFragment {
 
-    private SharedPlaceViewModel viewModel;
     private FragmentDetailBinding binding;
     private PhotoService photoService;
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
-    private FirestoreUtils firestoreUtils;
     private RatingService ratingService;
 
     private RecyclerView recyclerView;
     private DetailUserAdapter adapter;
 
+    private GooglePlaceViewModel googlePlaceViewModel;
+    private RestaurantViewModel restaurantViewModel;
+    private UserViewModel userViewModel;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        //ViewModelProvider
-        viewModel = new ViewModelProvider(requireActivity()).get(SharedPlaceViewModel.class);
+        // Initialize the repository
+        GooglePlacesRepository googlePlacesRepository = new GooglePlacesRepository(RetrofitClient.getApiService());
+        FirestoreRepository firestoreRepository = new FirestoreRepository();
+
+        // Initialize the ViewModel with Factory
+        GooglePlaceViewModelFactory factory = new GooglePlaceViewModelFactory(googlePlacesRepository);
+        RestaurantViewModelFactory restaurantViewModelFactory = new RestaurantViewModelFactory(firestoreRepository);
+        UserViewModelFactory userViewModelFactory = new UserViewModelFactory(firestoreRepository);
+
+        googlePlaceViewModel = new ViewModelProvider(requireActivity(), factory).get(GooglePlaceViewModel.class);
+        restaurantViewModel = new ViewModelProvider(requireActivity(), restaurantViewModelFactory).get(RestaurantViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity(), userViewModelFactory).get(UserViewModel.class);
 
         //ViewBinding
         initializeViewBinding(inflater, container);
+
+        // Initialisation de RatingService
+        this.ratingService = new RatingService();
 
         // Initialize services and Firebase
         String apikey = getString(R.string.google_maps_key);
         photoService = new PhotoService(apikey);
 
-        firestoreUtils = new FirestoreUtils();
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
-
-        ratingService = new RatingService(viewModel);
 
         // Display place information
         displayPlaceInfo();
@@ -113,14 +133,16 @@ public class DetailFragment extends BottomSheetDialogFragment {
 
     // Method to display place information
     private void displayPlaceInfo(){
-        viewModel.getSelectedPlace().observe(getViewLifecycleOwner(), place -> {
+        googlePlaceViewModel.getSelectedPlace().observe(getViewLifecycleOwner(), place -> {
 
             // updated by change in the restaurantList or userList
-            viewModel.getRestaurantList().observe(getViewLifecycleOwner(), restaurantList -> {
-                viewModel.getUserList().observe(getViewLifecycleOwner(), userList -> {
+            restaurantViewModel.getRestaurantList().observe(getViewLifecycleOwner(), restaurantList -> {
+                userViewModel.getUserList().observe(getViewLifecycleOwner(), userList -> {
+
+                    Restaurant currentRestaurant = restaurantViewModel.getRestaurantById(place.placeId);
 
                     // get userID
-                    User user = viewModel.getUserById(currentUser.getUid());
+                    User user = userViewModel.getUserById(currentUser.getUid());
 
                     //Display photo
                     photoService.displayFirstPhoto(place, binding.placeImage);
@@ -130,12 +152,12 @@ public class DetailFragment extends BottomSheetDialogFragment {
                     binding.restaurantAddress.setText(AddressService.getStreetAndNumber(place.address));
 
                     // Show star ratings
-                    ratingService.computeRating(place.placeId, new RatingService.OnRatingComputedListener() {
+                    ratingService.computeRating(currentRestaurant, userList.size(), new RatingService.OnRatingComputedListener() {
                         @Override
                         public void onRatingComputed(int rating) {
-                            binding.oneStarsDetail.setVisibility(View.GONE);
-                            binding.twoStarsDetail.setVisibility(View.GONE);
-                            binding.threeStarsDetail.setVisibility(View.GONE);
+                            binding.oneStarsDetail.setVisibility(View.INVISIBLE);
+                            binding.twoStarsDetail.setVisibility(View.INVISIBLE);
+                            binding.threeStarsDetail.setVisibility(View.INVISIBLE);
                             if (rating >= 1) {
                                 binding.oneStarsDetail.setVisibility(View.VISIBLE);
                             }
@@ -154,11 +176,12 @@ public class DetailFragment extends BottomSheetDialogFragment {
                         }
                     });
 
+                    //update select button
                     updateFabDrawable(user, place.placeId);
 
                     // change selected restaurant in the dataBase
                     binding.fabIsSelected.setOnClickListener(v -> {
-                        firestoreUtils.updateSelectedRestaurant(currentUser.getUid(), place.placeId, place.displayName.value);
+                        restaurantViewModel.updateSelectedRestaurant(currentUser.getUid(), place.placeId, place.displayName.value);
                     });
 
                     // Phone button click listener
@@ -184,7 +207,7 @@ public class DetailFragment extends BottomSheetDialogFragment {
 
                     // Add and remove like to database
                     binding.buttonFavorite.setOnClickListener(view -> {
-                        firestoreUtils.toggleFavoriteRestaurant(currentUser.getUid(), place.placeId);
+                        restaurantViewModel.toggleFavoriteRestaurant(currentUser.getUid(), place.placeId);
                     });
 
                     // Show RecyclerView with workmate list
@@ -204,7 +227,7 @@ public class DetailFragment extends BottomSheetDialogFragment {
 
         // display the list of users who selected this restaurant if there is at least one
         if (restaurantId != null){
-            List<User> userList = viewModel.getUsersBySelectedRestaurantId(restaurantId);
+            List<User> userList = userViewModel.getUsersBySelectedRestaurantId(restaurantId);
             if (userList.isEmpty()){
                 binding.recyclerViewDetail.setVisibility(View.GONE);
                 binding.emptyView.setVisibility(View.VISIBLE);

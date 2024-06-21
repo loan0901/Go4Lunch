@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.adapter;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,15 +10,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.Model.CustomOpeningHours;
 import com.example.myapplication.Model.CustomPlace;
 import com.example.myapplication.Model.Restaurant;
+import com.example.myapplication.R;
 import com.example.myapplication.service.AddressService;
 import com.example.myapplication.service.ClosingTimeService;
 import com.example.myapplication.service.DistanceService;
-import com.example.myapplication.service.FirestoreUtils;
 import com.example.myapplication.service.PhotoService;
 import com.example.myapplication.service.RatingService;
+import com.example.myapplication.viewModel.RestaurantViewModel;
+import com.example.myapplication.viewModel.UserViewModel;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -30,15 +31,17 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
     private PhotoService photoService;
     private LatLng currentUserLatLng;
     private OnItemClickListener listener;
-    private SharedPlaceViewModel sharedPlaceViewModel;
     private RatingService ratingService;
+    private RestaurantViewModel restaurantViewModel;
+    private UserViewModel userViewModel;
 
     // Constructor to initialize the adapter
-    public PlaceListAdapter(OnItemClickListener listener, String apiKey, SharedPlaceViewModel sharedPlaceViewModel) {
+    public PlaceListAdapter(OnItemClickListener listener, String apiKey, RestaurantViewModel restaurantViewModel, UserViewModel userViewModel) {
         this.listener = listener;
         this.photoService = new PhotoService(apiKey);
-        this.sharedPlaceViewModel = sharedPlaceViewModel;
-        this.ratingService = new RatingService(sharedPlaceViewModel);
+        this.restaurantViewModel = restaurantViewModel;
+        this.userViewModel = userViewModel;
+        this.ratingService = new RatingService();
     }
 
     // Interface for item click listener
@@ -57,6 +60,8 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
 
         CustomPlace place = places.get(position);
+        Restaurant currentRestaurant = restaurantViewModel.getRestaurantById(place.placeId);
+        int userCount = userViewModel.getUserList().getValue().size();
 
         holder.name.setText(place.displayName.value);
         holder.address.setText(AddressService.getStreetAndNumber(place.address));
@@ -73,21 +78,21 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
         photoService.displayFirstPhoto(place, holder.imageView);
 
         // Display the number of coworkers if any
-        if (sharedPlaceViewModel.getRestaurantById(place.placeId).getUserIdSelected() == null || sharedPlaceViewModel.getRestaurantById(place.placeId).getUserIdSelected().isEmpty()){
-            holder.iconCoworker.setVisibility(View.GONE);
-            holder.textViewCoworkerNumber.setVisibility(View.GONE);
+        if (currentRestaurant.getUserIdSelected() == null || currentRestaurant.getUserIdSelected().isEmpty()){
+            holder.iconCoworker.setVisibility(View.INVISIBLE);
+            holder.textViewCoworkerNumber.setVisibility(View.INVISIBLE);
         } else {
-            int coworkerNumber = sharedPlaceViewModel.getRestaurantById(place.placeId).getUserIdSelected().size();
+            int coworkerNumber = currentRestaurant.getUserIdSelected().size();
             holder.iconCoworker.setVisibility(View.VISIBLE);
             holder.textViewCoworkerNumber.setVisibility(View.VISIBLE);
             holder.textViewCoworkerNumber.setText("(" + coworkerNumber + ")");
         }
 
         // Display the rating stars
-        holder.oneStars.setVisibility(View.GONE);
-        holder.twoStars.setVisibility(View.GONE);
-        holder.threeStars.setVisibility(View.GONE);
-        ratingService.computeRating(place.placeId, new RatingService.OnRatingComputedListener() {
+        holder.oneStars.setVisibility(View.INVISIBLE);
+        holder.twoStars.setVisibility(View.INVISIBLE);
+        holder.threeStars.setVisibility(View.INVISIBLE);
+        ratingService.computeRating(currentRestaurant, userCount, new RatingService.OnRatingComputedListener() {
             @Override
             public void onRatingComputed(int rating) {
                 if (rating != 0) {

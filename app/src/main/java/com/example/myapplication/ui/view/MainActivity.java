@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.ui.view;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -25,11 +24,19 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
-import com.example.myapplication.Model.Restaurant;
+import com.example.myapplication.Model.CustomPlace;
 import com.example.myapplication.Model.User;
+import com.example.myapplication.R;
+import com.example.myapplication.Repository.FirestoreRepository;
+import com.example.myapplication.Repository.GooglePlacesRepository;
+import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.viewModel.GooglePlaceViewModel;
 import com.example.myapplication.databinding.ActivityMainBinding;
-import com.example.myapplication.service.FirestoreUtils;
-import com.example.myapplication.ui.LoginActivity;
+import com.example.myapplication.viewModel.RestaurantViewModel;
+import com.example.myapplication.viewModel.UserViewModel;
+import com.example.myapplication.viewModel.ViewModelFactory.GooglePlaceViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.RestaurantViewModelFactory;
+import com.example.myapplication.viewModel.ViewModelFactory.UserViewModelFactory;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,14 +51,15 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private FirebaseAuth auth;
     private FirebaseUser currentUser;
-    private FirestoreUtils firestoreUtils;
-    private SharedPlaceViewModel viewModel;
     private View rootView;
+    private AutoCompleteTextView autoCompleteSearch;
     private boolean isKeyboardVisible = false;
     private boolean isSecondFragmentVisible = false;
     private boolean isThirdFragmentVisible = false;
 
-    private AutoCompleteTextView autoCompleteSearch;
+    private GooglePlaceViewModel googlePlaceViewModel;
+    private RestaurantViewModel restaurantViewModel;
+    private UserViewModel userViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,28 +70,40 @@ public class MainActivity extends AppCompatActivity {
 
         rootView = findViewById(android.R.id.content);
 
-        viewModel = new ViewModelProvider(this).get(SharedPlaceViewModel.class);
+        // Initialize the repository
+        GooglePlacesRepository googlePlacesRepository = new GooglePlacesRepository(RetrofitClient.getApiService());
+        FirestoreRepository firestoreRepository = new FirestoreRepository();
+
+        // Initialize the ViewModel with Factory
+        GooglePlaceViewModelFactory factory = new GooglePlaceViewModelFactory(googlePlacesRepository);
+        RestaurantViewModelFactory restaurantViewModelFactory = new RestaurantViewModelFactory(firestoreRepository);
+        UserViewModelFactory userViewModelFactory = new UserViewModelFactory(firestoreRepository);
+
+        googlePlaceViewModel = new ViewModelProvider(this, factory).get(GooglePlaceViewModel.class);
+        restaurantViewModel = new ViewModelProvider(this, restaurantViewModelFactory).get(RestaurantViewModel.class);
+        userViewModel = new ViewModelProvider(this, userViewModelFactory).get(UserViewModel.class);
+
 
         // Initialize the date and time library
         AndroidThreeTen.init(this);
 
         // Initialize Firebase and get currentUser
         FirebaseApp.initializeApp(this);
-        firestoreUtils = new FirestoreUtils();
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
 
         //create a user in the database if it does not exist
         String currentUserUid = currentUser.getUid();
-        firestoreUtils.checkAndCreateUser(currentUserUid, currentUser.getDisplayName(), null, null,  null, currentUser.getPhotoUrl().toString());
+        userViewModel.checkAndCreateUser(currentUserUid, currentUser.getDisplayName(), null, null,  null, currentUser.getPhotoUrl().toString());
+
+        //get all the current User & Restaurant from the dataBase
+        userViewModel.updateUserList();
+        restaurantViewModel.updateRestaurantList();
 
         setUpNavView();
         configureToolBar();
         setupAutoCompleteSearch();
         setupKeyboardListener();
-
-        updateUserList();
-        updateRestaurantList();
 
         openDrawerButton();
         configureDrawer();
@@ -118,80 +138,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateUserList(){
-        // Retrieve all users from Firestore
-        firestoreUtils.getAllUsers(new FirestoreUtils.OnUsersRetrievedListener() {
-            @Override
-            public void onUsersRetrieved(List<User> userList) {
-                // Update the user list in the ViewModel
-                viewModel.setUserList(userList);
-
-                // Set up listener for real-time updates
-                listenForUsersUpdates();
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.w("Firestore", "Error getting users.", e);
-
-                // Set up listener for real-time updates even in case of initial error
-                listenForUsersUpdates();
-            }
-        });
-    }
-
-    private void listenForUsersUpdates() {
-        // Listen for real-time updates to the user list
-        firestoreUtils.listenForUsersUpdates(new FirestoreUtils.OnUsersRetrievedListener() {
-            @Override
-            public void onUsersRetrieved(List<User> userList) {
-                // Update the user list in the ViewModel
-                viewModel.setUserList(userList);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.w("Firestore", "Error getting users.", e);
-            }
-        });
-    }
-
-    private void updateRestaurantList() {
-        // Retrieve all restaurants from Firestore
-        firestoreUtils.getAllRestaurants(new FirestoreUtils.OnRestaurantsRetrievedListener() {
-            @Override
-            public void onRestaurantsRetrieved(List<Restaurant> restaurantList) {
-                // Update the restaurant list in the ViewModel
-                viewModel.setRestaurantList(restaurantList);
-                // Set up listener for real-time updates
-                listenForRestaurantUpdates();
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.w("Firestore", "Error getting restaurants.", e);
-                // Set up listener for real-time updates even in case of initial error
-                listenForRestaurantUpdates();
-            }
-        });
-    }
-
-    private void listenForRestaurantUpdates() {
-        // Listen for real-time updates to the restaurant list
-        firestoreUtils.listenForRestaurantUpdates(new FirestoreUtils.OnRestaurantsRetrievedListener() {
-            @Override
-            public void onRestaurantsRetrieved(List<Restaurant> restaurantList) {
-                // Update the restaurant list in the ViewModel
-                viewModel.setRestaurantList(restaurantList);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.w("Firestore", "Error getting restaurants.", e);
-            }
-        });
-    }
-
     private void configureToolBar(){
         // Configure the toolbar
         setSupportActionBar(binding.toolBar);
@@ -204,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the search button to toggle the visibility of the AutoCompleteTextView
         binding.searchButton.setOnClickListener(v -> {
-            if (autoCompleteSearch.getVisibility() == View.GONE) {
+            if (autoCompleteSearch.getVisibility() == View.INVISIBLE) {
                 autoCompleteSearch.setVisibility(View.VISIBLE);
                 autoCompleteSearch.setText("");
                 autoCompleteSearch.requestFocus();
@@ -215,8 +161,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Observe the ViewModel to get the list of restaurant names
-        viewModel.getPlaces().observe(this, places -> {
-            List<String> placeNames = viewModel.getAllCustomPlaceName();
+        googlePlaceViewModel.getPlaces().observe(this, places -> {
+            List<String> placeNames = googlePlaceViewModel.getAllCustomPlaceName();
             ArrayAdapter<String> adapter;
 
             if (isSecondFragmentVisible || isThirdFragmentVisible) {
@@ -233,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         autoCompleteSearch.setOnItemClickListener((adapterView, view, position, id) -> {
             String selectedRestaurantName = (String) adapterView.getItemAtPosition(position);
             // when clicked, pass response to viewModel
-            viewModel.setSelectedRestaurantName(selectedRestaurantName);
+            restaurantViewModel.setSelectedRestaurantName(selectedRestaurantName);
             Toast.makeText(this, "Selected: " + selectedRestaurantName, Toast.LENGTH_SHORT).show();
             hideAutoCompleteSearch();
         });
@@ -243,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 String selectedRestaurantName = autoCompleteSearch.getText().toString();
                 // when clicked, pass response to viewModel
-                viewModel.setSelectedRestaurantName(selectedRestaurantName);
+                restaurantViewModel.setSelectedRestaurantName(selectedRestaurantName);
                 Toast.makeText(this, "Selected: " + selectedRestaurantName, Toast.LENGTH_SHORT).show();
                 hideAutoCompleteSearch();
                 return true;
@@ -262,10 +208,10 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (isThirdFragmentVisible) {
                     // Filter users by restaurant name for third fragment
-                    viewModel.getUsersByRestaurantName(s.toString());
+                    userViewModel.getUsersByRestaurantName(s.toString());
                 } else {
                     // Filter customPlace by restaurant name for first and second fragments
-                    viewModel.filterPlaces(s.toString());
+                    googlePlaceViewModel.filterPlaces(s.toString());
                 }
             }
 
@@ -297,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         // Hide the AutoCompleteTextView and clear its text
         if (autoCompleteSearch.getVisibility() == View.VISIBLE) {
             hideKeyboard();
-            autoCompleteSearch.setVisibility(View.GONE);
+            autoCompleteSearch.setVisibility(View.INVISIBLE);
             autoCompleteSearch.setText(""); // Vider le texte ici
             binding.searchButton.setVisibility(View.VISIBLE);
         }
@@ -357,18 +303,41 @@ public class MainActivity extends AppCompatActivity {
     private void lunchButtonClick(){
         // Set up the click action for the "your lunch" button
         binding.lunchButton.setOnClickListener(view -> {
-            User user = viewModel.getUserById(currentUser.getUid());
-            // if the user has chosen a restaurant, display it in the detailActivity
+            //check if the user has chosen a restaurant
+            User user = userViewModel.getUserById(currentUser.getUid());
+            String selectedRestaurantId = user.getSelectedRestaurantId();
             if (user.getSelectedRestaurantId() != null){
-                viewModel.setPlaceForDetailFragmentById(user.getSelectedRestaurantId());
-                DetailFragment detailBottomSheetFragment = new DetailFragment();
-                detailBottomSheetFragment.show(getSupportFragmentManager(), "DetailFragment");
+                //check if its already in the viewModel, open DetailActivity
+                if (googlePlaceViewModel.checkIfPlaceListContainsRestaurant(selectedRestaurantId)) {
+                    openDetailActivity(selectedRestaurantId);
+                } else {
+                    // otherwise, load the place, add it to the viewModel and open DetailActivity
+                    String apiKey = getString(R.string.google_maps_key);
+                    String fieldMask = "id,displayName,formattedAddress,location,rating,regularOpeningHours,photos,internationalPhoneNumber,websiteUri";
+                    googlePlaceViewModel.getPlaceDetails(selectedRestaurantId, apiKey, fieldMask, new GooglePlaceViewModel.PlaceDetailsCallback() {
+                        @Override
+                        public void onPlaceDetailsLoaded(CustomPlace placeDetails) {
+                            openDetailActivity(selectedRestaurantId);
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(MainActivity.this, "Erreur lors de la récupération du restaurant", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             } else {
-                // else display message
+                // if no restaurant is selected, notify the user
                 Toast noRestaurantSelectedMessage = Toast.makeText(MainActivity.this, "vous n'avez pas encore choisi de restaurant", Toast.LENGTH_SHORT);
                 noRestaurantSelectedMessage.show();
             }
         });
+    }
+
+    // open the DetailActivity with the restaurantId
+    private void openDetailActivity(String restaurantId){
+        googlePlaceViewModel.setPlaceForDetailFragmentById(restaurantId);
+        DetailFragment detailBottomSheetFragment = new DetailFragment();
+        detailBottomSheetFragment.show(getSupportFragmentManager(), "DetailFragment");
     }
 
     private void settingsButtonClick(){
@@ -393,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // Remove listeners to avoid memory leaks
-        firestoreUtils.removeUsersListener();
-        firestoreUtils.removeRestaurantListener();
+        userViewModel.removeListeners();
+        restaurantViewModel.removeListeners();
     }
 }
