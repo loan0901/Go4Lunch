@@ -32,10 +32,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
     }
+
 }
 
 dependencies {
@@ -47,12 +49,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
-    implementation("com.google.firebase:firebase-auth:22.3.1")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-
     implementation("androidx.activity:activity:1.8.2")
+    implementation("org.chromium.net:cronet-embedded:119.6045.31")
+    implementation ("com.jakewharton.threetenabp:threetenabp:1.3.1")
+    implementation ("androidx.core:core:1.6.0")
 
     //google map & place
     implementation("com.google.android.gms:play-services-maps:18.2.0")
@@ -74,11 +74,13 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     //firebase
+    implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.firebase:firebase-core:21.1.1")
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
-    implementation("com.google.firebase:firebase-firestore:24.11.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("com.google.firebase:firebase-firestore:25.0.0")
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
 
     //Facebook
     implementation("com.facebook.android:facebook-android-sdk:16.0.0")
@@ -89,7 +91,16 @@ dependencies {
     //Picasso
     implementation ("com.squareup.picasso:picasso:2.8")
 
-    implementation("org.chromium.net:cronet-embedded:119.6045.31")
-
-    implementation ("com.jakewharton.threetenabp:threetenabp:1.3.1")
+    //Test
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation ("org.robolectric:robolectric:4.3.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-intents:3.6.1")
+    testImplementation ("com.squareup.okhttp3:mockwebserver:4.9.1")
+    testImplementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.mockito:mockito-inline:3.12.4")
+    testImplementation ("com.google.firebase:firebase-firestore:25.0.0")
+    testImplementation ("androidx.test:core:1.4.0")
+    testImplementation("org.threeten:threetenbp:1.3.2")
 }

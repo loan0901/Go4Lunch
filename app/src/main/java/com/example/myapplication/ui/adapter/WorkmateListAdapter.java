@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapter;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -23,11 +24,13 @@ public class WorkmateListAdapter extends RecyclerView.Adapter<WorkmateListAdapte
     private List<User> users = new ArrayList<>();
     private final RequestManager glide;
     private OnItemClickListener listener;
+    private Context context;
 
     // Constructor to initialize Glide and the click listener
-    public WorkmateListAdapter(RequestManager glide, OnItemClickListener listener) {
+    public WorkmateListAdapter(Context context, RequestManager glide, OnItemClickListener listener) {
         this.glide = glide;
         this.listener = listener;
+        this.context = context;
     }
 
     // Interface for item click events
@@ -54,15 +57,17 @@ public class WorkmateListAdapter extends RecyclerView.Adapter<WorkmateListAdapte
             glide.load(photoUri).into(holder.imageViewProfilePicture);
         } else {
             // TODO : ajouter image par defaut
-            holder.imageViewProfilePicture.setImageResource(R.drawable.ic_launcher_background);
+            holder.imageViewProfilePicture.setImageResource(R.drawable.baseline_account_circle_24);
         }
 
         // display name and chosen restaurant
         if (user.getSelectedRestaurantName() != null) {
-            holder.restaurantName.setText(user.getUserName() + " mange à " + user.getSelectedRestaurantName());
+            String textRestaurantChoice = user.getUserName() + context.getString(R.string.eat_at) + user.getSelectedRestaurantName();
+            holder.restaurantName.setText(textRestaurantChoice);
             holder.restaurantName.setTextColor(Color.argb(255, 0, 0, 0)); // black
         } else {
-            holder.restaurantName.setText(user.getUserName() + " n'a pas encore choisi");
+            String textNoChoice = user.getUserName() + context.getString(R.string.hasnt_chosen_yet);
+            holder.restaurantName.setText(textNoChoice);
             holder.restaurantName.setTextColor(Color.argb(128, 128, 128, 128)); // Gray with transparency
         }
 

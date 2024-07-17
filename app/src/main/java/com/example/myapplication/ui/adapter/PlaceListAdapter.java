@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapter;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,9 +35,11 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
     private RatingService ratingService;
     private RestaurantViewModel restaurantViewModel;
     private UserViewModel userViewModel;
+    private Context context;
 
     // Constructor to initialize the adapter
-    public PlaceListAdapter(OnItemClickListener listener, String apiKey, RestaurantViewModel restaurantViewModel, UserViewModel userViewModel) {
+    public PlaceListAdapter(Context context, OnItemClickListener listener, String apiKey, RestaurantViewModel restaurantViewModel, UserViewModel userViewModel) {
+        this.context = context;
         this.listener = listener;
         this.photoService = new PhotoService(apiKey);
         this.restaurantViewModel = restaurantViewModel;
@@ -65,7 +68,7 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.Plac
 
         holder.name.setText(place.displayName.value);
         holder.address.setText(AddressService.getStreetAndNumber(place.address));
-        holder.openHour.setText(ClosingTimeService.displayClosingTime(place.openingHours));
+        holder.openHour.setText(ClosingTimeService.displayClosingTime(context, place.openingHours));
 
         // Calculate and display the distance to the place
         if (currentUserLatLng != null && place.location != null) {

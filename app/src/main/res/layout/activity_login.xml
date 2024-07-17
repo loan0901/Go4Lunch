@@ -15,9 +15,10 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:src="@drawable/background_image_login"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textViewTittle"
@@ -26,7 +27,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/logo"
-        android:text="Go4Lunch"
+        android:text="@string/go4lunch"
         android:textStyle="bold"
         android:textSize="54sp"
         android:textColor="#CCCCCC" />
@@ -41,14 +42,81 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/eMailButton"
+        android:orientation="horizontal"
+        android:background="#BCBCBC"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/googleSingInButton"
+        android:layout_marginBottom="21dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/email_24"
+        app:tint="@color/white"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="10dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:text="Email login"/>
+
+    </LinearLayout>
+
     <com.google.android.gms.common.SignInButton
         android:id="@+id/googleSingInButton"
         android:layout_width="0dp"
         android:layout_height="60dp"
+        android:layout_margin="21dp"
+        android:layout_marginBottom="36dp"
+        app:layout_constraintBottom_toTopOf="@id/twitterLoginButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/twitterLoginButton"
+        android:orientation="horizontal"
+        android:background="#1DA1F2"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/facebookSingInButton"
-        android:layout_margin="21dp"/>
+        android:layout_marginBottom="21dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/icons8_twitter"
+            app:tint="@color/white"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:text="Twitter login"/>
+
+    </LinearLayout>
 
     <com.facebook.login.widget.LoginButton
         android:id="@+id/facebookSingInButton"

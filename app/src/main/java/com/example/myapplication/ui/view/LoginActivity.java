@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.ActivityLoginBinding;
+import com.example.myapplication.service.TwitterActivity;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -67,6 +68,25 @@ public class LoginActivity extends AppCompatActivity {
         configureSignInButton();
         // Configure Facebook login button
         configureFacebookLogin();
+
+        twitterLoginButton();
+
+        eMailLoginButton();
+    }
+
+    private void eMailLoginButton(){
+        binding.eMailButton.setOnClickListener(view -> {
+            Intent intent = new Intent(LoginActivity.this, EmailLoginActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void twitterLoginButton(){
+        binding.twitterLoginButton.setOnClickListener(view -> {
+            Intent intent = new Intent(LoginActivity.this, TwitterActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
+        });
     }
 
     // ActivityResultLauncher to handle the result of the Google Sign-In intent
@@ -81,10 +101,10 @@ public class LoginActivity extends AppCompatActivity {
                     auth.signInWithCredential(authCredential).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             auth = FirebaseAuth.getInstance();
-                            Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, R.string.connexion_success, Toast.LENGTH_SHORT).show();
                             launchMainActivity();
                         } else {
-                            Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, R.string.connection_failed + task.getException().toString(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 } catch (ApiException e) {

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    //UI FR
+
+    <string name="go4lunch">Go4Lunch</string>
+    <string name="eat_here">&#160;mange ici !</string>
+    <string name="close_today">fermé aujourd\'hui</string>
+    <string name="close_at">ferme à&#160;</string>
+    <string name="closed_opens_at">fermé, ouvre à&#160;</string>
+    <string name="eat_at">&#160;mange à&#160;</string>
+    <string name="hasnt_chosen_yet">&#160;n\'a pas encore choisi</string>
+    <string name="error_retrieving_restaurant">Erreur lors de la récupération du restaurant</string>
+    <string name="no_restaurant_chosen">vous n\'avez pas encore choisi de restaurant</string>
+    <string name="no_restaurant_selected">aucun restaurant sélectionné</string>
+    <string name="no_phone_restaurant">Aucun numéro pour ce restaurant.</string>
+    <string name="no_website">Aucun site web pour ce restaurant.</string>
+    <string name="connexion_success">Connexion réussi</string>
+    <string name="connection_failed">Échec de la connexion:&#160;</string>
+    <string name="position_error">Impossible d\'afficher votre position, affichage de l\'emplacement par défaut.</string>
+    <string name="position_error_permission">Impossible d\'afficher votre position, autorisation refusé</string>
+    <string name="dialog_position_setting">Pour afficher la carte autour de vous, l\'application nécessite l\'accès à votre position que vous avez refusée. Vous pouvez toujours l\'autoriser dans les paramètres.</string>
+    <string name="dialog_notification_setting">l\'application ne vous enverra pas de notification. pour modifier votre choix, rendez-vous dans les paramètres. </string>
+    <string name="permission_require">Permission requise</string>
+    <string name="cancel">Annuler</string>
+    <string name="settings">Paramètres</string>
+    <string name="Authorization_recommended">Autorisation recommandée</string>
+    <string name="dialog_location_permission_require">Cette application nécessite l\'accès à votre position pour fonctionner correctement.</string>
+    <string name="dialog_notification_permission_require">Cette application nécessite l\'autorisation des notifications pour fonctionner correctement.</string>
+    <string name="no_matching_restaurant">aucun restaurant correspondant</string>
+    <string name="searching">search…</string>
+    <string name="your_lunch_xml">TON RESTAURANT</string>
+    <string name="notification_xml">&#160;NOTIFICATION</string>
+    <string name="logout_xml">DECONNEXION</string>
+    <string name="call_xml">APPEL</string>
+    <string name="like_xml">LIKE</string>
+    <string name="website_xml">SITE WEB</string>
+    <string name="no_coworker_restaurant_xml">Aucun utilisateur n\'a encore choisi ce restaurant.</string>
+    <string name="notification_enabled">notification activé</string>
+    <string name="notification_disabled">notification désactivé</string>
+    <string name="error">erreur</string>
+    <string name="notification_lonely_restaurant">Vous êtes le seul dans ce restaurant.</string>
+    <string name="notification_meet_restaurant">Rendez-vous au restaurant&#160;</string>
+
+
+</resources>

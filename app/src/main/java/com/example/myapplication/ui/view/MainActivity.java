@@ -1,12 +1,20 @@
 package com.example.myapplication.ui.view;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -15,8 +23,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -30,6 +41,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.Repository.FirestoreRepository;
 import com.example.myapplication.Repository.GooglePlacesRepository;
 import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.service.AlarmReceiver;
 import com.example.myapplication.viewModel.GooglePlaceViewModel;
 import com.example.myapplication.databinding.ActivityMainBinding;
 import com.example.myapplication.viewModel.RestaurantViewModel;
@@ -40,13 +52,25 @@ import com.example.myapplication.viewModel.ViewModelFactory.UserViewModelFactory
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "MyPrefs";
+    private static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
+    private static final String KEY_NOTIFICATION_PERMISSION_REQUESTED = "notificationPermissionRequested";
+    private static final String KEY_NOTIFICATION_PERMISSION_REQUEST_COUNT = "notificationPermissionRequestCount";
+    private static final int MAX_PERMISSION_REQUESTS = 2;
+
+    private NotificationPermissionListener notificationPermissionListener;
+    private SharedPreferences preferences;
 
     private ActivityMainBinding binding;
     private FirebaseAuth auth;
@@ -70,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
 
         rootView = findViewById(android.R.id.content);
 
+        // Initialize SharedPreferences
+        preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Load the saved state of the switch
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isEnabled = sharedPreferences.getBoolean(NOTIFICATIONS_ENABLED, false);
+        binding.switchNotifications.setChecked(isEnabled);
+
         // Initialize the repository
         GooglePlacesRepository googlePlacesRepository = new GooglePlacesRepository(RetrofitClient.getApiService());
         FirestoreRepository firestoreRepository = new FirestoreRepository();
@@ -83,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         restaurantViewModel = new ViewModelProvider(this, restaurantViewModelFactory).get(RestaurantViewModel.class);
         userViewModel = new ViewModelProvider(this, userViewModelFactory).get(UserViewModel.class);
 
-
         // Initialize the date and time library
         AndroidThreeTen.init(this);
 
@@ -94,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         //create a user in the database if it does not exist
         String currentUserUid = currentUser.getUid();
-        userViewModel.checkAndCreateUser(currentUserUid, currentUser.getDisplayName(), null, null,  null, currentUser.getPhotoUrl().toString());
+        userViewModel.checkAndCreateUser(currentUserUid, currentUser.getDisplayName(), null, null,  null, currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl().toString() : null);
 
         //get all the current User & Restaurant from the dataBase
         userViewModel.updateUserList();
@@ -109,11 +140,13 @@ public class MainActivity extends AppCompatActivity {
         configureDrawer();
 
         lunchButtonClick();
-        settingsButtonClick();
+        notificationSwitchButtonClick();
         logoutButton();
 
         loadProfilePicture();
         loadProfileNameAndEmail();
+
+        askNotificationPermissionOnCreate();
     }
 
     private void setUpNavView(){
@@ -180,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
             String selectedRestaurantName = (String) adapterView.getItemAtPosition(position);
             // when clicked, pass response to viewModel
             restaurantViewModel.setSelectedRestaurantName(selectedRestaurantName);
-            Toast.makeText(this, "Selected: " + selectedRestaurantName, Toast.LENGTH_SHORT).show();
             hideAutoCompleteSearch();
         });
 
@@ -190,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
                 String selectedRestaurantName = autoCompleteSearch.getText().toString();
                 // when clicked, pass response to viewModel
                 restaurantViewModel.setSelectedRestaurantName(selectedRestaurantName);
-                Toast.makeText(this, "Selected: " + selectedRestaurantName, Toast.LENGTH_SHORT).show();
                 hideAutoCompleteSearch();
                 return true;
             }
@@ -280,6 +311,8 @@ public class MainActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(photoUri)
                     .into(profilePictureImageView);
+        } else {
+            profilePictureImageView.setImageResource(R.drawable.baseline_account_circle_24);
         }
     }
 
@@ -321,13 +354,13 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onFailure(Exception e) {
-                            Toast.makeText(MainActivity.this, "Erreur lors de la récupération du restaurant", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, R.string.error_retrieving_restaurant, Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             } else {
                 // if no restaurant is selected, notify the user
-                Toast noRestaurantSelectedMessage = Toast.makeText(MainActivity.this, "vous n'avez pas encore choisi de restaurant", Toast.LENGTH_SHORT);
+                Toast noRestaurantSelectedMessage = Toast.makeText(MainActivity.this, R.string.no_restaurant_chosen, Toast.LENGTH_SHORT);
                 noRestaurantSelectedMessage.show();
             }
         });
@@ -340,10 +373,27 @@ public class MainActivity extends AppCompatActivity {
         detailBottomSheetFragment.show(getSupportFragmentManager(), "DetailFragment");
     }
 
-    private void settingsButtonClick(){
+    private void notificationSwitchButtonClick(){
         // Set up the click action for the settings button
-        binding.settingButton.setOnClickListener(view -> {
-            // TODO : ?? setting ??
+        binding.switchNotifications.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            // Save the state in SharedPreferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(NOTIFICATIONS_ENABLED, isChecked);
+            editor.apply();
+            if (isChecked) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    // Enable notifications
+                    setDailyNotification();
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                }
+
+            } else {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    // Disable notifications
+                    disableNotifications();
+                }
+            }
         });
     }
 
@@ -356,6 +406,101 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                if (isGranted) {
+                    // FCM SDK (and your app) can post notifications.
+                    binding.switchNotifications.setChecked(true);
+                    notifyRequestEnd();
+                } else {
+                    int requestCount = preferences.getInt(KEY_NOTIFICATION_PERMISSION_REQUEST_COUNT, 0);
+                    preferences.edit().putInt(KEY_NOTIFICATION_PERMISSION_REQUEST_COUNT, requestCount + 1).apply();
+                    preferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                    binding.switchNotifications.setChecked(false);
+                    if (requestCount + 1 >= MAX_PERMISSION_REQUESTS) {
+                        showSettingsDialog();
+                    } else {
+                        notifyRequestEnd();
+                    }
+                }
+            });
+
+    private void askNotificationPermissionOnCreate() {
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean permissionRequested = preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false);
+
+        if (!permissionRequested) {
+            // First time asking for permission
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        } else {
+            notifyRequestEnd();
+        }
+    }
+
+    public interface NotificationPermissionListener {
+        void onNotificationPermissionFinish();
+    }
+
+    public void setNotificationPermissionListener(NotificationPermissionListener listener) {
+        this.notificationPermissionListener = listener;
+    }
+
+    private void notifyRequestEnd(){
+        if (notificationPermissionListener != null) {
+            notificationPermissionListener.onNotificationPermissionFinish();
+        }
+    }
+
+    // Show settings dialog to enable location permission
+    private void showSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_notification_setting)
+                .setTitle(R.string.permission_require)
+                .setCancelable(false)
+                .setNegativeButton(R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss())
+                .setPositiveButton(R.string.settings, (dialogInterface, i) -> {
+                    openAppSettings();
+                    dialogInterface.dismiss();
+                });
+        builder.show();
+    }
+
+    // Open app settings to enable location permission
+    private void openAppSettings() {
+        Intent settingIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", this.getPackageName(), null);
+        settingIntent.setData(uri);
+        startActivity(settingIntent);
+    }
+
+    private void setDailyNotification() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, 17);
+        calendar.set(Calendar.MINUTE, 15);
+
+        if (alarmManager != null) {
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                    AlarmManager.INTERVAL_DAY, pendingIntent);
+        }
+    }
+
+    private void disableNotifications() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
+        Log.d("disableNotifications", "Notifications disabled");
     }
 
     @Override

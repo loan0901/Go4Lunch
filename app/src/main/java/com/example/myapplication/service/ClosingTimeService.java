@@ -1,6 +1,9 @@
 package com.example.myapplication.service;
 
+import android.content.Context;
+
 import com.example.myapplication.Model.CustomOpeningHours;
+import com.example.myapplication.R;
 
 import org.threeten.bp.DayOfWeek;
 import org.threeten.bp.LocalTime;
@@ -15,10 +18,10 @@ public class ClosingTimeService {
      * @return A string indicating the closing time if the restaurant is currently open, or the next opening time if it is closed.
      *         Returns "fermé aujourd'hui" if the restaurant is closed for the entire day.
      */
-    public static String displayClosingTime(CustomOpeningHours openingHours) {
+    public static String displayClosingTime(Context context, CustomOpeningHours openingHours) {
         // Check if opening hours or periods are null or empty
         if (openingHours == null || openingHours.periods == null || openingHours.periods.isEmpty()) {
-            return "fermé aujourd'hui";
+            return context.getString(R.string.close_today);
         }
 
         // Get the current date and time
@@ -67,11 +70,11 @@ public class ClosingTimeService {
 
         // Determine the closing or opening message
         if (nextClosingTime == null && nextOpeningTime == null) {
-            return "fermé aujourd'hui";
+            return context.getString(R.string.close_today);
         } else if (nextOpeningTime != null && (nextClosingTime == null || nextOpeningTime.isBefore(nextClosingTime))) {
-            return "fermé, ouvre à " + nextOpeningTime.toString();
+            return context.getString(R.string.closed_opens_at) + nextOpeningTime;
         } else {
-            return "ferme à " + nextClosingTime.toString();
+            return context.getString(R.string.close_at) + nextClosingTime;
         }
     }
 }

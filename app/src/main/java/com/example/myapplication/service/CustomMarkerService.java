@@ -1,6 +1,5 @@
 package com.example.myapplication.service;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.content.Context;
 import android.graphics.Bitmap;

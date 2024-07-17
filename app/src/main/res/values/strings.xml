@@ -1,33 +1,73 @@
 <resources>
-    <string name="app_name">My Application</string>
-    <string name="title_Workmates">Workmates</string>
-    <string name="title_list_view">List View</string>
-    <string name="title_map_view">Map View</string>
-    <string name="open_drawer">open</string>
-    <string name="close_drawer">close</string>
-    <string name="openDrawerButton">openDrawerButton</string>
-    <string name="searchButton">searchButton</string>
-    <string name="open_drawer_button">open drawer button</string>
-    <string name="search_button">search button</string>
-    <string name="give_location_permission">give location permission</string>
-
-    <string name="connection_succeed">Connection réussi</string>
-    <string name="error_authentication_canceled">connection annulée</string>
-    <string name="error_no_internet">erreur de connction internet</string>
-    <string name="error_unknown_error">erreur</string>
+    <string name="app_name" translatable="false">My Application</string>
+    <string name="title_Workmates" translatable="false">Workmates</string>
+    <string name="title_list_view" translatable="false">List View</string>
+    <string name="title_map_view" translatable="false">Map View</string>
+    <string name="open_drawer" translatable="false">open</string>
+    <string name="close_drawer" translatable="false">close</string>
+    <string name="openDrawerButton" translatable="false">openDrawerButton</string>
+    <string name="searchButton" translatable="false">searchButton</string>
+    <string name="open_drawer_button" translatable="false">open drawer button</string>
+    <string name="search_button" translatable="false">search button</string>
+    <string name="give_location_permission" translatable="false">give location permission</string>
+    <string name="error_authentication_canceled" translatable="false">connection annulée</string>
+    <string name="error_no_internet" translatable="false">erreur de connction internet</string>
+    <string name="error_unknown_error" translatable="false">erreur</string>
+    <string name="default_notification_channel_id" translatable="false">123</string>
 
     //LOGIN
     <string name="default_web_client_id" translatable="false">webClientId.apps.googleusercontent.com</string>
 
     //FACEBOOK
-    <string name="facebook_app_id">731143048999870</string>
-    <string name="fb_login_protocol_scheme">fb731143048999870</string>
-    <string name="facebook_client_token">0e4f7b372b8ace5f231f5035e7dfd793</string>
-    <string name="title_activity_detail">DetailActivity</string>
+    <string name="facebook_app_id" translatable="false">731143048999870</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb731143048999870</string>
+    <string name="facebook_client_token" translatable="false">0e4f7b372b8ace5f231f5035e7dfd793</string>
+    <string name="title_activity_detail" translatable="false">DetailActivity</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="first_fragment_label" translatable="false">First Fragment</string>
+    <string name="second_fragment_label" translatable="false">Second Fragment</string>
+    <string name="next" translatable="false">Next</string>
+    <string name="previous" translatable="false">Previous</string>
+
+    //UI EN
+    <string name="go4lunch">Go4Lunch</string>
+    <string name="eat_here">&#160;eat here!</string>
+    <string name="close_today">closed today</string>
+    <string name="close_at">closes at&#160;</string>
+    <string name="closed_opens_at">closed, opens at&#160;</string>
+    <string name="eat_at">&#160;eat at&#160;</string>
+    <string name="hasnt_chosen_yet">&#160;hasn\'t chosen yet</string>
+    <string name="error_retrieving_restaurant">Error retrieving restaurant</string>
+    <string name="no_restaurant_chosen">you haven\'t chosen a restaurant yet</string>
+    <string name="no_restaurant_selected">no restaurant selected</string>
+    <string name="no_phone_restaurant">No phone number for this restaurant.</string>
+    <string name="no_website">No website for this restaurant.</string>
+    <string name="connexion_success">Connection successful</string>
+    <string name="connection_failed">Connection failed:&#160;</string>
+    <string name="position_error">Unable to display your position, showing default location.</string>
+    <string name="position_error_permission">Unable to display your position, permission denied</string>
+    <string name="dialog_position_setting">To display the map around you, the application requires access to your location, which you have denied. You can still allow it in the settings.</string>
+    <string name="dialog_notification_setting">the application will not send you a notification. To change your choice, go to the settings.</string>
+    <string name="permission_require">Permission required</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">Settings</string>
+    <string name="Authorization_recommended">Authorization recommended</string>
+    <string name="dialog_location_permission_require">This application requires access to your location to function properly.</string>
+    <string name="dialog_notification_permission_require">This app requires notification permission to work properly.</string>
+    <string name="no_matching_restaurant">no matching restaurant</string>
+    <string name="searching">search…</string>
+    <string name="your_lunch_xml">YOUR LUNCH</string>
+    <string name="notification_xml">&#160;NOTIFICATION</string>
+    <string name="logout_xml">LOGOUT</string>
+    <string name="call_xml">CALL</string>
+    <string name="like_xml">LIKE</string>
+    <string name="website_xml">WEBSITE</string>
+    <string name="no_coworker_restaurant_xml">No user has chosen this restaurant yet.</string>
+    <string name="notification_enabled">notification enabled</string>
+    <string name="notification_disabled">notification disabled</string>
+    <string name="error">error</string>
+    <string name="notification_lonely_restaurant">You are the only one in this restaurant.</string>
+    <string name="notification_meet_restaurant">Meet at the restaurant&#160;</string>
+
 
 </resources>

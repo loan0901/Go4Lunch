@@ -67,7 +67,7 @@ public class RestaurantListFragment extends Fragment implements PlaceListAdapter
         apiKey = getString(R.string.google_maps_key);
         recyclerView = fragmentRestaurantListBinding.recyclerViewXml;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new PlaceListAdapter(this, apiKey, restaurantViewModel, userViewModel);
+        adapter = new PlaceListAdapter(getContext(),this, apiKey, restaurantViewModel, userViewModel);
         recyclerView.setAdapter(adapter);
 
         // Load data into the RecyclerView.

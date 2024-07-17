@@ -2,6 +2,7 @@ package com.example.myapplication.ui.view;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -71,6 +72,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private GooglePlaceViewModel googlePlaceViewModel;
     private RestaurantViewModel restaurantViewModel;
     private UserViewModel userViewModel;
+    private boolean isNotificationPermissionGranted = false;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -98,6 +101,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
         return fragmentMapBinding.getRoot();
     }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof MainActivity) {
+            ((MainActivity) context).setNotificationPermissionListener(() -> {
+                checkPermissionAndShowNearbyRestaurant();
+                isNotificationPermissionGranted = true;
+            });
+        }
+    }
+
 
     // Initialize view binding
     private void initializeViewBinding(LayoutInflater inflater, ViewGroup container) {
@@ -132,7 +147,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15f));
                     marker.showInfoWindow();
                 } else {
-                    Toast.makeText(requireContext(), "aucun restaurant correspondant", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.no_matching_restaurant, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -186,22 +201,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     // Show rationale dialog for location permission
     private void showRationaleDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setMessage("Cette application nécessite l'accès à votre position pour fonctionner correctement.")
-                .setTitle("Permission recommandée")
+        builder.setMessage(R.string.dialog_location_permission_require)
+                .setTitle(R.string.Authorization_recommended)
                 .setCancelable(false)
                 .setPositiveButton("OK", (dialogInterface, i) -> requestLocationPermission())
-                .setNegativeButton("Annuler", (dialogInterface, i) -> dialogInterface.dismiss());
+                .setNegativeButton(R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss());
         builder.show();
     }
 
     // Show settings dialog to enable location permission
     private void showSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setMessage("Pour afficher la carte autour de vous, l'application nécessite l'accès à votre position que vous avez refusée. Vous pouvez toujours l'autoriser dans les paramètres.")
-                .setTitle("Permission requise")
+        builder.setMessage(R.string.dialog_position_setting)
+                .setTitle(R.string.permission_require)
                 .setCancelable(false)
-                .setNegativeButton("Annuler", (dialogInterface, i) -> dialogInterface.dismiss())
-                .setPositiveButton("Paramètres", (dialogInterface, i) -> {
+                .setNegativeButton(R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss())
+                .setPositiveButton(R.string.settings, (dialogInterface, i) -> {
                     openAppSettings();
                     dialogInterface.dismiss();
                 });
@@ -220,7 +235,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private void showLastLocation(LatLng position) {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
 
             userViewModel.setCurrentUserLatLng(position);
         }
@@ -242,17 +257,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 } else {
                     userLatLng = defaultLocation; // Default location
-                    Toast.makeText(requireContext(), "Unable to display your location, showing default location.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.position_error, Toast.LENGTH_SHORT).show();
                 }
                 callback.onResult(userLatLng);
             }).addOnFailureListener(e -> {
                 userLatLng = defaultLocation; // Default location in case of failure
-                Toast.makeText(requireContext(), "Failed to fetch your location, showing default location.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.position_error, Toast.LENGTH_SHORT).show();
                 callback.onResult(userLatLng);
             });
         } else {
-            userLatLng = new LatLng(46.2, 2.1); // Default location if permission not granted
-            Toast.makeText(requireContext(), "Unable to display your location, showing default location.", Toast.LENGTH_SHORT).show();
+            userLatLng = defaultLocation; // Default location if permission not granted
+            Toast.makeText(requireContext(), R.string.position_error_permission, Toast.LENGTH_SHORT).show();
             callback.onResult(userLatLng);
         }
     }
@@ -265,7 +280,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         googleMap = map;
 
         configureMapStyle();
-        checkPermissionAndShowNearbyRestaurant();
+        if (isNotificationPermissionGranted) {
+            checkPermissionAndShowNearbyRestaurant();
+        }
         configureLocationButton();
         openPlaceDetailByMarkerId();
     }

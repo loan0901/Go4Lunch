@@ -189,7 +189,7 @@ public class DetailFragment extends BottomSheetDialogFragment {
                         if (place.phoneNumber != null) {
                             openDialerWithPhoneNumber(place.phoneNumber);
                         } else {
-                            Toast.makeText(getContext(), "Aucun numéro pour ce restaurant.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), R.string.no_phone_restaurant, Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -198,7 +198,7 @@ public class DetailFragment extends BottomSheetDialogFragment {
                         if (place.websiteUri != null) {
                             openWebLink(Uri.parse(place.websiteUri));
                         } else {
-                            Toast.makeText(getContext(), "Aucun site web pour ce restaurant.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), R.string.no_website, Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -222,7 +222,7 @@ public class DetailFragment extends BottomSheetDialogFragment {
         RequestManager glide = Glide.with(this);
         recyclerView = binding.recyclerViewDetail;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new DetailUserAdapter(glide);
+        adapter = new DetailUserAdapter(getContext(), glide);
         recyclerView.setAdapter(adapter);
 
         // display the list of users who selected this restaurant if there is at least one

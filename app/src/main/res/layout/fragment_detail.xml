@@ -58,7 +58,6 @@
             app:layout_constraintEnd_toEndOf="@id/twoStarsDetail"
             android:layout_margin="16dp"
             android:textSize="18sp"
-            android:text="Le Restaurant"
             android:singleLine="true"
             android:textColor="@color/white"/>
 
@@ -102,8 +101,7 @@
             app:layout_constraintEnd_toStartOf="@id/threeStarsDetail"
             android:layout_margin="16dp"
             android:textColor="@color/white"
-            android:singleLine="true"
-            android:text="68 rue de la ville"/>
+            android:singleLine="true" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -123,7 +121,7 @@
             android:drawableTint="#E14C2F"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
-            android:text="CALL"
+            android:text="@string/call_xml"
             android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
@@ -136,7 +134,7 @@
             android:drawableTop="@drawable/baseline_star_unliked_48"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
-            android:text="LIKE"
+            android:text="@string/like_xml"
             android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
@@ -150,7 +148,7 @@
             android:drawableTint="#E14C2F"
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
-            android:text="WEBSITE"
+            android:text="@string/website_xml"
             android:textColor="#E14C2F"
             android:textStyle="bold"
             android:textSize="16sp"/>
@@ -181,7 +179,7 @@
             android:id="@+id/emptyView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Aucun utilisateur n'a encore choisi ce restaurant."
+            android:text="@string/no_coworker_restaurant_xml"
             android:gravity="center"
             android:textSize="16sp"
             android:padding="16dp"

@@ -66,7 +66,7 @@
                     android:id="@+id/title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Go4Lunch !"
+                    android:text="@string/go4lunch"
                     android:layout_marginStart="24dp"
                     app:layout_constraintStart_toEndOf="@id/drawerButton"
                     app:layout_constraintTop_toTopOf="parent"
@@ -87,7 +87,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     android:layout_margin="6dp"
                     android:background="#E8E8E8"
-                    android:hint="Search..."
+                    android:hint="@string/searching"
                     android:paddingStart="12dp"
                     android:visibility="invisible"
                     android:imeOptions="actionDone"
@@ -140,7 +140,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="@id/imageViewDrawer"
                 android:gravity="center"
-                android:text="Go4Lunch"
+                android:text="@string/go4lunch"
                 android:textStyle="bold"
                 android:textSize="45sp"
                 android:textColor="#CCCCCC"
@@ -213,23 +213,22 @@
                     android:background="@android:color/transparent"
                     android:gravity="start"
                     android:drawableLeft="@drawable/your_lunch_button"
-                    android:text="YOUR LUNCH"
+                    android:text="@string/your_lunch_xml"
                     android:textSize="18dp"
                     android:textColor="#F1F1F1"/>
 
-                <Button
-                    android:id="@+id/settingButton"
-                    android:layout_width="match_parent"
+                <Switch
+                    android:id="@+id/switch_notifications"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="14dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/lunchButton"
-                    android:background="@android:color/transparent"
-                    android:gravity="start"
                     android:drawableLeft="@drawable/baseline_settings_24"
-                    android:text="SETTINGS"
                     android:textSize="18dp"
-                    android:textColor="#F1F1F1"/>
+                    android:textColor="#F1F1F1"
+                    android:paddingStart="24dp"
+                    android:text="@string/notification_xml" />
 
                 <Button
                     android:id="@+id/logoutButton"
@@ -237,11 +236,11 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="14dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/settingButton"
+                    app:layout_constraintTop_toBottomOf="@id/switch_notifications"
                     android:background="@android:color/transparent"
                     android:gravity="start"
                     android:drawableLeft="@drawable/baseline_logout_24"
-                    android:text="LOGOUT"
+                    android:text="@string/logout_xml"
                     android:textSize="18dp"
                     android:textColor="#F1F1F1"/>
 

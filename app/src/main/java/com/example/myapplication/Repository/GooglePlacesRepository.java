@@ -2,6 +2,8 @@ package com.example.myapplication.Repository;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.myapplication.Model.Circle;
 import com.example.myapplication.Model.CustomPlace;
 import com.example.myapplication.Model.LocationRestriction;
@@ -47,7 +49,7 @@ public class GooglePlacesRepository {
         Call<PlacesResponse> call = googlePlacesApi.getNearbyPlaces(request, apiKey, fieldMask);
         call.enqueue(new Callback<PlacesResponse>() {
             @Override
-            public void onResponse(Call<PlacesResponse> call, Response<PlacesResponse> response) {
+            public void onResponse(@NonNull Call<PlacesResponse> call, @NonNull Response<PlacesResponse> response) {
                 if (response.isSuccessful()) {
                     // If the response is successful, extract the list of places
                     PlacesResponse placesResponse = response.body();

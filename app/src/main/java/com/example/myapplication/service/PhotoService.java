@@ -32,8 +32,7 @@ public class PhotoService {
             // Handle the case where there are no photos available
             Log.i("Photo", "No photos available for place ID: " + place.placeId);
             // set a default image if no photo is available
-            //TODO
-            imageView.setImageResource(R.drawable.ic_launcher_background); // Assurez-vous d'avoir une image par défaut dans vos ressources
+            imageView.setImageResource(R.drawable.baseline_hide_image_24); // display default image
         }
     }
 

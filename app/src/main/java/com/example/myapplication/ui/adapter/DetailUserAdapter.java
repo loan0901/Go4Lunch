@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.adapter;
 
+import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +22,10 @@ public class DetailUserAdapter extends RecyclerView.Adapter<DetailUserAdapter.Us
 
     private List<User> users = new ArrayList<>();
     private final RequestManager glide;
+    private Context context;
 
-    public DetailUserAdapter(RequestManager glide) {
+    public DetailUserAdapter(Context context, RequestManager glide) {
+        this.context = context;
         this.glide = glide;
     }
 
@@ -49,7 +52,8 @@ public class DetailUserAdapter extends RecyclerView.Adapter<DetailUserAdapter.Us
         }
 
         // Set the user's name and message
-        holder.textViewName.setText(user.getUserName() + " mange ici !");
+        String text = user.getUserName() + context.getString(R.string.eat_here);
+        holder.textViewName.setText(text);
     }
 
     @Override
@@ -66,8 +70,8 @@ public class DetailUserAdapter extends RecyclerView.Adapter<DetailUserAdapter.Us
 
     // ViewHolder class to hold references to the views in each item
     static class UserDetailViewHolder extends RecyclerView.ViewHolder {
-        private TextView textViewName;
-        private ImageView imageViewProfilePicture;
+        private final TextView textViewName;
+        private final ImageView imageViewProfilePicture;
 
         public UserDetailViewHolder(@NonNull View itemView) {
             super(itemView);

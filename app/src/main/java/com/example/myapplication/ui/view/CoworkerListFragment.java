@@ -67,7 +67,7 @@ public class CoworkerListFragment extends Fragment implements WorkmateListAdapte
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Initialize the adapter with Glide and the click listener
-        adapter = new WorkmateListAdapter(glide, this);
+        adapter = new WorkmateListAdapter(getContext(), glide, this);
         recyclerView.setAdapter(adapter);
 
         // Observe changes in the user list and update the adapter
@@ -97,13 +97,13 @@ public class CoworkerListFragment extends Fragment implements WorkmateListAdapte
                     }
                     @Override
                     public void onFailure(Exception e) {
-                        Toast.makeText(getContext(), "Erreur lors de la récupération du restaurant", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.error_retrieving_restaurant, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         } else {
             // if no restaurant is selected, notify the user
-            Toast.makeText(getContext(), "aucun restaurant sélectionné", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.no_restaurant_selected, Toast.LENGTH_SHORT).show();
         }
     }
 
