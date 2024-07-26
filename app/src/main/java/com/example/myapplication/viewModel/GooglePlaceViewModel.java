@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.myapplication.Model.CustomPlace;
 import com.example.myapplication.Repository.FirestoreRepository;
+import com.example.myapplication.Repository.FirestoreRepositoryInterface;
 import com.example.myapplication.Repository.GooglePlacesRepository;
 import com.example.myapplication.network.RetrofitClient;
 
@@ -38,7 +39,7 @@ public class GooglePlaceViewModel extends ViewModel {
 
 
     // Load nearby restaurants and add them to the View Model
-    public void loadNearbyPlaces(String apiKey, double latitude, double longitude, double radius, int maxResultCount, List<String> includedTypes, String fieldMask, FirestoreRepository firestoreRepository) {
+    public void loadNearbyPlaces(String apiKey, double latitude, double longitude, double radius, int maxResultCount, List<String> includedTypes, String fieldMask, FirestoreRepositoryInterface firestoreRepository) {
         // get restaurants with only the information that is necessary
         googlePlacesRepository.loadNearbyRestaurants(apiKey, latitude, longitude, radius, maxResultCount, includedTypes, fieldMask, new GooglePlacesRepository.GooglePlacesCallback() {
             @Override

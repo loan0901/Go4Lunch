@@ -181,7 +181,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     });
 
     // on permission granted, get user's location and show nearby restaurant
-    private void onPermissionGranted() {
+    public void onPermissionGranted() {
         getUserLatLng(this::showLastLocation);
 
         // if the "customPlace" have not yet been loaded, load them
@@ -232,7 +232,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     // Show last known location on the map
-    private void showLastLocation(LatLng position) {
+    public void showLastLocation(LatLng position) {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, DEFAULT_ZOOM));
@@ -339,7 +339,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     // Add a marker for the place on the map
-    private void placePin(CustomPlace place){
+    public void placePin(CustomPlace place){
         Restaurant restaurant = restaurantViewModel.getRestaurantById(place.placeId);
         Marker marker = googleMap.addMarker(new MarkerOptions()
                 .position(place.location)
@@ -383,5 +383,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     public void onDestroyView() {
         super.onDestroyView();
         fragmentMapBinding = null;
+    }
+
+    // Getter for Test :
+    public GoogleMap getGoogleMap() {
+        return googleMap;
+    }
+
+    public RestaurantViewModel getRestaurantViewModel() {
+        return restaurantViewModel;
+    }
+
+    public Map<String, Marker> getMarkerMap() {
+        return markerMap;
+    }
+
+    public GooglePlaceViewModel getGooglePlaceViewModel(){
+        return googlePlaceViewModel;
     }
 }

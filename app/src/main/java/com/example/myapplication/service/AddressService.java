@@ -13,7 +13,7 @@ public class AddressService {
      */
     public static String getStreetAndNumber(String address) {
         // Regular expression to match street number and name
-        String regex = "^\\d+\\s+[^,]+|^[^,]+";
+        String regex = "^d+s+[^,]+|^[^,]+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(address);
         if (matcher.find()) {

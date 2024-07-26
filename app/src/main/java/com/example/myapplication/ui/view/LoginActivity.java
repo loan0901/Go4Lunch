@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.ActivityLoginBinding;
-import com.example.myapplication.service.TwitterActivity;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;

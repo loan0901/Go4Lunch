@@ -56,7 +56,6 @@ public class WorkmateListAdapter extends RecyclerView.Adapter<WorkmateListAdapte
             Uri photoUri = Uri.parse(user.getPhotoUrl());
             glide.load(photoUri).into(holder.imageViewProfilePicture);
         } else {
-            // TODO : ajouter image par defaut
             holder.imageViewProfilePicture.setImageResource(R.drawable.baseline_account_circle_24);
         }
 
@@ -89,7 +88,7 @@ public class WorkmateListAdapter extends RecyclerView.Adapter<WorkmateListAdapte
 
 
     // Provide a reference to the views for each data item
-    static class WorkmateViewHolder extends RecyclerView.ViewHolder {
+    public static class WorkmateViewHolder extends RecyclerView.ViewHolder {
 
         TextView restaurantName;
         ImageView imageViewProfilePicture;

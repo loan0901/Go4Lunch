@@ -31,10 +31,16 @@ public class EmailLoginActivity extends AppCompatActivity {
         binding = ActivityEmailLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        if (firebaseAuth == null) {
+            firebaseAuth = FirebaseAuth.getInstance();
+        }
 
         loginButton();
         registerButton();
+    }
+
+    public void setFirebaseAuth(FirebaseAuth firebaseAuth) {
+        this.firebaseAuth = firebaseAuth;
     }
 
     private void loginButton(){

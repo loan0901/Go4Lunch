@@ -1,23 +1,16 @@
-package com.example.myapplication.service;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.myapplication.ui.view;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import com.example.myapplication.R;
-import com.example.myapplication.ui.view.LoginActivity;
-import com.example.myapplication.ui.view.MainActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.OAuthProvider;
 
-public class TwitterActivity extends MainActivity {
+public class TwitterActivity extends LoginActivity {
 
     FirebaseAuth firebaseAuth;
 

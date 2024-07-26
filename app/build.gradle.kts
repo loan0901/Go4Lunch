@@ -37,7 +37,6 @@ android {
         viewBinding = true
         buildConfig = true
     }
-
 }
 
 dependencies {
@@ -53,6 +52,7 @@ dependencies {
     implementation("org.chromium.net:cronet-embedded:119.6045.31")
     implementation ("com.jakewharton.threetenabp:threetenabp:1.3.1")
     implementation ("androidx.core:core:1.6.0")
+    implementation ("androidx.work:work-runtime-ktx:2.9.0")
 
     //google map & place
     implementation("com.google.android.gms:play-services-maps:18.2.0")
@@ -74,9 +74,9 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     //firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.firebase:firebase-core:21.1.1")
-    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.google.firebase:firebase-firestore:25.0.0")
@@ -91,16 +91,46 @@ dependencies {
     //Picasso
     implementation ("com.squareup.picasso:picasso:2.8")
 
+
+
     //Test
+
+    // Test
+    // JUnit 4
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    testImplementation ("org.robolectric:robolectric:4.3.1")
-    androidTestImplementation ("androidx.test.espresso:espresso-intents:3.6.1")
-    testImplementation ("com.squareup.okhttp3:mockwebserver:4.9.1")
-    testImplementation("org.mockito:mockito-core:3.12.4")
-    testImplementation("org.mockito:mockito-inline:3.12.4")
-    testImplementation ("com.google.firebase:firebase-firestore:25.0.0")
-    testImplementation ("androidx.test:core:1.4.0")
+
+    // Mockito
+    testImplementation("org.mockito:mockito-core:4.0.0")
+    androidTestImplementation("org.mockito:mockito-android:4.0.0")
+
+    // AndroidX Test
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.2.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
+
+    // Robolectric
+    testImplementation("org.robolectric:robolectric:4.7.3")
+
+    // MockWebServer pour simuler les serveurs HTTP dans les tests
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
+
+    // Firebase Firestore et Auth pour les tests
+    testImplementation("com.google.firebase:firebase-firestore:25.0.0")
+    testImplementation("com.google.firebase:firebase-auth:21.0.0")
+
+    // AndroidX Test Core pour les tests unitaires Android
+    testImplementation("androidx.test:core:1.5.0")
+
+    // ThreeTenBP pour les tests de date/heure
     testImplementation("org.threeten:threetenbp:1.3.2")
+
+    debugImplementation("androidx.fragment:fragment-testing:1.8.2")
+
+    androidTestImplementation ("androidx.test.uiautomator:uiautomator:2.3.0")
 }

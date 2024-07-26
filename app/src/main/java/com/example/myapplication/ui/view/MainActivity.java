@@ -123,6 +123,13 @@ public class MainActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
 
+        // Check if the currentUser is null
+        if (currentUser == null) {
+            // Redirect to LoginActivity if user is not logged in
+            startActivity(new Intent(this, LoginActivity.class));
+            finish(); // Finish this activity so the user can't navigate back to it
+            return; // Exit onCreate method to avoid executing the following code
+        }
         //create a user in the database if it does not exist
         String currentUserUid = currentUser.getUid();
         userViewModel.checkAndCreateUser(currentUserUid, currentUser.getDisplayName(), null, null,  null, currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl().toString() : null);

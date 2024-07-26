@@ -33,10 +33,16 @@ public class EmailSingUpActivity extends AppCompatActivity {
         binding = ActivityEmailSingUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        if (firebaseAuth == null) {
+            firebaseAuth = FirebaseAuth.getInstance();
+        }
 
         registerButton();
         logInButton();
+    }
+
+    public void setFirebaseAuth(FirebaseAuth firebaseAuth) {
+        this.firebaseAuth = firebaseAuth;
     }
 
     private void registerButton(){

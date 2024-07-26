@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".app.Go4Lunch"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,7 +27,7 @@
             android:name=".ui.view.EmailLoginActivity"
             android:exported="false" />
         <activity
-            android:name=".service.TwitterActivity"
+            android:name=".ui.view.TwitterActivity"
             android:exported="false" />
         <activity
             android:name=".ui.view.LoginActivity"
@@ -72,3 +73,4 @@
     </application>
 
 </manifest>
+

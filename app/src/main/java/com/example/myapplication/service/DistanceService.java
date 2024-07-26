@@ -33,10 +33,10 @@ public class DistanceService {
         // Convert the distance to kilometers if it is 1000 meters or more
         if (distanceInMeters >= 1000) {
             float distanceInKilometers = distanceInMeters / 1000;
-            return String.format("%.1f km", distanceInKilometers) + "km";
+            return String.format("%.1f km", distanceInKilometers);
         } else {
             // Return the distance in meters
-            return distanceInMeters + " m";
+            return String.format("%.0f m", distanceInMeters);
         }
     }
 }

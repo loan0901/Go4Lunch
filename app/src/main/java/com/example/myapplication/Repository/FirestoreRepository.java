@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FirestoreRepository {
+public class FirestoreRepository implements FirestoreRepositoryInterface{
 
     private final FirebaseFirestore db;
     private ListenerRegistration userListenerRegistration;
@@ -30,6 +30,7 @@ public class FirestoreRepository {
     }
 
     // Check if the user exists, otherwise create a new user
+    @Override
     public void checkAndCreateUser(String uid, String userName, String selectedRestaurantId, String selectedRestaurantName, List<String> favoriteRestaurants, String photoUrl) {
         DocumentReference userRef = db.collection("users").document(uid);
 
@@ -67,12 +68,8 @@ public class FirestoreRepository {
                 .addOnFailureListener(e -> Log.w("Firestore", "Error creating user", e));
     }
 
-    public interface OnUsersRetrievedListener {
-        void onUsersRetrieved(List<User> userList);
-        void onError(Exception e);
-    }
-
     // Retrieve all users from Firestore
+    @Override
     public void getAllUsers(OnUsersRetrievedListener listener) {
         CollectionReference usersRef = db.collection("users");
 
@@ -97,6 +94,7 @@ public class FirestoreRepository {
     }
 
     // Listen for updates to the users collection
+    @Override
     public void listenForUsersUpdates(OnUsersRetrievedListener listener) {
         CollectionReference usersRef = db.collection("users");
         userListenerRegistration = usersRef.addSnapshotListener((querySnapshot, e) -> {
@@ -119,6 +117,7 @@ public class FirestoreRepository {
     }
 
     // Remove the listener for updates to the users collection
+    @Override
     public void removeUsersListener() {
         if (userListenerRegistration != null) {
             userListenerRegistration.remove();
@@ -126,6 +125,7 @@ public class FirestoreRepository {
     }
 
     // Check if a restaurant exists, otherwise create a new restaurant
+    @Override
     public void checkOrCreateRestaurant(String restaurantId, int likeCount, List<String> userIdSelected) {
         DocumentReference restaurantRef = db.collection("restaurants").document(restaurantId);
 
@@ -156,12 +156,8 @@ public class FirestoreRepository {
                 .addOnFailureListener(e -> Log.w("Firestore", "Error creating restaurant", e));
     }
 
-    public interface OnRestaurantsRetrievedListener {
-        void onRestaurantsRetrieved(List<Restaurant> restaurantList);
-        void onError(Exception e);
-    }
-
     // Retrieve all restaurants from Firestore
+    @Override
     public void getAllRestaurants(OnRestaurantsRetrievedListener listener) {
         CollectionReference restaurantsRef = db.collection("restaurants");
 
@@ -186,6 +182,7 @@ public class FirestoreRepository {
     }
 
     // Listen for updates to the restaurants collection
+    @Override
     public void listenForRestaurantUpdates(OnRestaurantsRetrievedListener listener) {
         CollectionReference restaurantsRef = db.collection("restaurants");
         restaurantListenerRegistration = restaurantsRef.addSnapshotListener((querySnapshot, e) -> {
@@ -208,6 +205,7 @@ public class FirestoreRepository {
     }
 
     // Remove the listener for updates to the restaurants collection
+    @Override
     public void removeRestaurantListener() {
         if (restaurantListenerRegistration != null) {
             restaurantListenerRegistration.remove();
@@ -215,6 +213,7 @@ public class FirestoreRepository {
     }
 
     // Toggle the favorite status of a restaurant for a user
+    @Override
     public void toggleFavoriteRestaurant(String uid, String restaurantId) {
         DocumentReference userRef = db.collection("users").document(uid);
         DocumentReference restaurantRef = db.collection("restaurants").document(restaurantId);
@@ -258,6 +257,7 @@ public class FirestoreRepository {
     }
 
     // Update the selected restaurant for a user
+    @Override
     public void updateSelectedRestaurant(String uid, String newRestaurantId, String restaurantName) {
         DocumentReference userRef = db.collection("users").document(uid);
 

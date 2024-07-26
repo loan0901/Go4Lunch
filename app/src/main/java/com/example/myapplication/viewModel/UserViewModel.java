@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel;
 import com.example.myapplication.Model.User;
 import com.example.myapplication.Repository.FirestoreRepository;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
