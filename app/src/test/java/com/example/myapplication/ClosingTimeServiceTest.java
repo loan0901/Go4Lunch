@@ -20,26 +20,33 @@ import org.threeten.bp.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 
-
+// Unit test class for ClosingTimeService, testing the displayClosingTime method.
+// the goal is to retrieve the closest closing time if possible.
 public class ClosingTimeServiceTest {
 
+    // Mock context to simulate Android Context
     @Mock
     private Context mockContext;
 
+    // Set up method to initialize mocks and define mock behavior
     @Before
     public void setUp() {
+        // Initialize Mockito annotations
         MockitoAnnotations.openMocks(this);
+        // Define return values for mock context getString method
         when(mockContext.getString(R.string.close_today)).thenReturn("fermé aujourd'hui");
         when(mockContext.getString(R.string.close_at)).thenReturn("fermé à ");
         when(mockContext.getString(R.string.closed_opens_at)).thenReturn("fermé, ouvre à ");
     }
 
+    // Test the displayClosingTime method when opening hours are null
     @Test
     public void testDisplayClosingTime_nullOpeningHours() {
         String result = ClosingTimeService.displayClosingTime(mockContext, null);
         assertEquals("fermé aujourd'hui", result);
     }
 
+    // Test the displayClosingTime method when opening hours are empty
     @Test
     public void testDisplayClosingTime_emptyOpeningHours() {
         CustomOpeningHours openingHours = new CustomOpeningHours();
@@ -49,6 +56,7 @@ public class ClosingTimeServiceTest {
         assertEquals("fermé aujourd'hui", result);
     }
 
+    // Test the displayClosingTime method when the place is currently open
     @Test
     public void testDisplayClosingTime_currentlyOpen() {
         CustomOpeningHours.Period period = new CustomOpeningHours.Period();
@@ -67,6 +75,7 @@ public class ClosingTimeServiceTest {
         }
     }
 
+    // Test the displayClosingTime method when the place is currently closed but opens later
     @Test
     public void testDisplayClosingTime_currentlyClosed_opensLater() {
         CustomOpeningHours.Period period = new CustomOpeningHours.Period();
@@ -85,6 +94,7 @@ public class ClosingTimeServiceTest {
         }
     }
 
+    // Test the displayClosingTime method when the place is closed all day
     @Test
     public void testDisplayClosingTime_closedAllDay() {
         CustomOpeningHours.Period period = new CustomOpeningHours.Period();
@@ -103,6 +113,7 @@ public class ClosingTimeServiceTest {
         }
     }
 
+    // Helper method to create a CustomOpeningHours.Point object
     private CustomOpeningHours.Point createPoint(int day, int hour, int minute) {
         CustomOpeningHours.Point point = new CustomOpeningHours.Point();
         point.day = day;

@@ -10,6 +10,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.OAuthProvider;
 
+// TwitterActivity handles user login functionality using Twitter OAuth provider.
 public class TwitterActivity extends LoginActivity {
 
     FirebaseAuth firebaseAuth;
@@ -25,7 +26,6 @@ public class TwitterActivity extends LoginActivity {
 
         Task<AuthResult> pendingResultTask = firebaseAuth.getPendingAuthResult();
         if (pendingResultTask != null) {
-            // There's something already here! Finish the sign-in for your user.
             pendingResultTask
                     .addOnSuccessListener(
                             authResult -> {

@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int MAX_PERMISSION_REQUESTS = 2;
 
     private NotificationPermissionListener notificationPermissionListener;
-    private SharedPreferences preferences;
 
     private ActivityMainBinding binding;
     private FirebaseAuth auth;
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         rootView = findViewById(android.R.id.content);
 
         // Initialize SharedPreferences
-        preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         // Load the saved state of the switch
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -415,26 +414,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Declare and initialize an ActivityResultLauncher to handle permission requests.
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                // Get the shared preferences to store and retrieve permission data.
                 SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+                // If the permission is granted, enable the notifications switch and Notify the end of the permission request (for the following request).
                 if (isGranted) {
-                    // FCM SDK (and your app) can post notifications.
                     binding.switchNotifications.setChecked(true);
                     notifyRequestEnd();
                 } else {
+                    // If the permission is denied, retrieve the number of times the permission has been requested and increment.
                     int requestCount = preferences.getInt(KEY_NOTIFICATION_PERMISSION_REQUEST_COUNT, 0);
                     preferences.edit().putInt(KEY_NOTIFICATION_PERMISSION_REQUEST_COUNT, requestCount + 1).apply();
                     preferences.edit().putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true).apply();
+                    // Disable the notifications switch.
                     binding.switchNotifications.setChecked(false);
+
                     if (requestCount + 1 >= MAX_PERMISSION_REQUESTS) {
+                        // If the maximum request count is reached, show a dialog to guide the user to the settings.
                         showSettingsDialog();
                     } else {
+                        // Otherwise, notify the end of the permission request (for the following request).
                         notifyRequestEnd();
                     }
                 }
             });
 
+    // ask notification permission if it's the first time
     private void askNotificationPermissionOnCreate() {
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean permissionRequested = preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false);
@@ -455,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
         this.notificationPermissionListener = listener;
     }
 
+    // notify request end to launch the next authorization request
     private void notifyRequestEnd(){
         if (notificationPermissionListener != null) {
             notificationPermissionListener.onNotificationPermissionFinish();
@@ -483,6 +492,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(settingIntent);
     }
 
+    // set daily notification
     private void setDailyNotification() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
@@ -506,6 +516,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // disable notification
     private void disableNotifications() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);

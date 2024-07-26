@@ -14,10 +14,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+// The DailyResetWorker class extends Worker to perform daily reset tasks in Firestore DataBase
+// remove the "selectedRestaurantId", "selectedRestaurantId" and "userIdSelected" to clean the data for next day.
 public class DailyResetWorker extends Worker {
 
+    // Initialize the Firebase Firestore instance.
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    // Constructor for the DailyResetWorker class.
     public DailyResetWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
@@ -25,11 +29,15 @@ public class DailyResetWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        // Reset user selections.
         resetUserSelections();
+        // Reset restaurant selections.
         resetRestaurantSelections();
+        // Return success result after completing the work.
         return Result.success();
     }
 
+    // Method to reset user selections in the Firestore database.
     private void resetUserSelections() {
         db.collection("users").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -43,6 +51,7 @@ public class DailyResetWorker extends Worker {
         });
     }
 
+    // Method to reset restaurant selections in the Firestore database.
     private void resetRestaurantSelections() {
         db.collection("restaurants").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

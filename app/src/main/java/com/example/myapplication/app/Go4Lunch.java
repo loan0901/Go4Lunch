@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Go4Lunch extends Application implements LifecycleObserver {
 
+    // works in the background to launch "DailyResetWork" at 3 p.m.
     @Override
     public void onCreate() {
         super.onCreate();

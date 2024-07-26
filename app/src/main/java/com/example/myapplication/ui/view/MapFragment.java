@@ -59,7 +59,7 @@ import java.util.Map;
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private static final float DEFAULT_ZOOM = 18f;
-    private static final long LOADING_TIMEOUT = 10000L; // 10 seconds
+    private static final long LOADING_TIMEOUT = 3000L; // 3 seconds
 
     private FusedLocationProviderClient fusedLocationClient;
     private FragmentMapBinding fragmentMapBinding;

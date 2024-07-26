@@ -5,6 +5,7 @@ import com.example.myapplication.Model.User;
 
 import java.util.List;
 
+// Interface of FirestoreRepository for ease of Unit testing.
 public interface FirestoreRepositoryInterface {
     void checkAndCreateUser(String uid, String userName, String selectedRestaurantId, String selectedRestaurantName, List<String> favoriteRestaurants, String photoUrl);
     void getAllUsers(FirestoreRepository.OnUsersRetrievedListener listener);

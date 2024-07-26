@@ -37,27 +37,33 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+// Unit test class for GooglePlaceViewModel, testing various methods related to managing places.
 @RunWith(MockitoJUnitRunner.class)
 public class GooglePlaceViewModelTest {
 
+    // Mock dependencies for the test
     @Mock
     private GooglePlacesRepository googlePlacesRepository;
 
     @Mock
     private FirestoreRepositoryInterface firestoreRepositoryInterface;
 
+    // Inject mocks into the ViewModel instance
     @InjectMocks
     private GooglePlaceViewModel googlePlaceViewModel;
 
+    // Mock observers for LiveData
     @Mock
     private Observer<List<CustomPlace>> placesObserver;
 
     @Mock
     private Observer<List<CustomPlace>> filteredPlacesObserver;
 
+    // Rule to ensure LiveData updates happen instantly during tests
     @Rule
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
+    // Set up method to initialize mocks and observers
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -66,8 +72,10 @@ public class GooglePlaceViewModelTest {
         googlePlaceViewModel.getFilteredPlaces().observeForever(filteredPlacesObserver);
     }
 
+    // Test the loadNearbyPlaces method for a successful response
     @Test
     public void testLoadNearbyPlaces_success() {
+        // Arrange: Set up test data and mock behavior
         List<CustomPlace> mockPlaces = new ArrayList<>();
         CustomPlace place1 = new CustomPlace();
         place1.placeId = "1";
@@ -83,19 +91,22 @@ public class GooglePlaceViewModelTest {
             return null;
         }).when(googlePlacesRepository).loadNearbyRestaurants(anyString(), anyDouble(), anyDouble(), anyDouble(), anyInt(), anyList(), anyString(), any(GooglePlacesRepository.GooglePlacesCallback.class));
 
+        // Act: Call the method to be tested
         googlePlaceViewModel.loadNearbyPlaces("apiKey", 10.0, 20.0, 1000, 10, Arrays.asList("restaurant"), "fieldMask", firestoreRepositoryInterface);
 
-        // Vérifiez que le LiveData places a bien été mis à jour
+        // Assert: Verify that the LiveData places has been updated
         verify(placesObserver).onChanged(mockPlaces);
 
-        // Vérifiez que la méthode checkOrCreateRestaurant a été appelée sur firestoreRepositoryInterface
+        // Assert: Verify that the checkOrCreateRestaurant method has been called on firestoreRepositoryInterface
         for (CustomPlace place : mockPlaces) {
             verify(firestoreRepositoryInterface).checkOrCreateRestaurant(place.placeId, 0, null);
         }
     }
 
+    // Test the getPlaceDetails method for a successful response
     @Test
     public void testGetPlaceDetails_success() {
+        // Arrange: Set up test data and mock behavior
         CustomPlace mockPlace = new CustomPlace();
         mockPlace.placeId = "1";
 
@@ -106,10 +117,11 @@ public class GooglePlaceViewModelTest {
             return null;
         }).when(googlePlacesRepository).getPlaceDetails(anyString(), anyString(), anyString(), any(GooglePlacesRepository.PlaceDetailsCallback.class));
 
+        // Act: Call the method to be tested
         googlePlaceViewModel.getPlaceDetails("placeId", "apiKey", "fieldMask", new GooglePlaceViewModel.PlaceDetailsCallback() {
             @Override
             public void onPlaceDetailsLoaded(CustomPlace placeDetails) {
-                // Verify that the place details are added to the LiveData
+                // Assert: Verify that the place details are added to the LiveData
                 assertEquals(googlePlaceViewModel.getPlaces().getValue().get(0), mockPlace);
             }
 
@@ -120,8 +132,10 @@ public class GooglePlaceViewModelTest {
         });
     }
 
+    // Test the filterPlaces method
     @Test
     public void testFilterPlaces() {
+        // Arrange: Set up test data
         CustomPlace place1 = new CustomPlace();
         place1.placeId = "1";
         place1.displayName = new CustomPlace.DisplayName();
@@ -134,14 +148,18 @@ public class GooglePlaceViewModelTest {
 
         List<CustomPlace> mockPlaces = Arrays.asList(place1, place2);
 
+        // Act: Set the places and filter them
         googlePlaceViewModel.setPlaces(mockPlaces);
         googlePlaceViewModel.filterPlaces("One");
 
+        // Assert: Verify that the filtered places observer is called with the correct data
         verify(filteredPlacesObserver).onChanged(Arrays.asList(place1));
     }
 
+    // Test the setPlaceForDetailFragmentById method
     @Test
     public void testSetPlaceForDetailFragmentById() {
+        // Arrange: Set up test data
         CustomPlace place1 = new CustomPlace();
         place1.placeId = "1";
         place1.displayName = new CustomPlace.DisplayName();
@@ -154,14 +172,18 @@ public class GooglePlaceViewModelTest {
 
         List<CustomPlace> mockPlaces = Arrays.asList(place1, place2);
 
+        // Act: Set the places and select a place by ID
         googlePlaceViewModel.setPlaces(mockPlaces);
         googlePlaceViewModel.setPlaceForDetailFragmentById("2");
 
+        // Assert: Verify that the selected place is correct
         assertEquals(place2, googlePlaceViewModel.getSelectedPlace().getValue());
     }
 
+    // Test the getAllCustomPlaceName method
     @Test
     public void testGetAllCustomPlaceName() {
+        // Arrange: Set up test data
         CustomPlace place1 = new CustomPlace();
         place1.placeId = "1";
         place1.displayName = new CustomPlace.DisplayName();
@@ -174,14 +196,18 @@ public class GooglePlaceViewModelTest {
 
         List<CustomPlace> mockPlaces = Arrays.asList(place1, place2);
 
+        // Act: Set the places and get all place names
         googlePlaceViewModel.setPlaces(mockPlaces);
 
+        // Assert: Verify that the returned place names are correct
         List<String> expectedNames = Arrays.asList("Place One", "Place Two");
         assertEquals(expectedNames, googlePlaceViewModel.getAllCustomPlaceName());
     }
 
+    // Test the checkIfPlaceListContainsRestaurant method
     @Test
     public void testCheckIfPlaceListContainsRestaurant() {
+        // Arrange: Set up test data
         CustomPlace place1 = new CustomPlace();
         place1.placeId = "1";
         place1.displayName = new CustomPlace.DisplayName();
@@ -194,8 +220,10 @@ public class GooglePlaceViewModelTest {
 
         List<CustomPlace> mockPlaces = Arrays.asList(place1, place2);
 
+        // Act: Set the places and check if the list contains certain restaurants
         googlePlaceViewModel.setPlaces(mockPlaces);
 
+        // Assert: Verify that the method returns the correct boolean values
         assertTrue(googlePlaceViewModel.checkIfPlaceListContainsRestaurant("1"));
         assertFalse(googlePlaceViewModel.checkIfPlaceListContainsRestaurant("3"));
     }

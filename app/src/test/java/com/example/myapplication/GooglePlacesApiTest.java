@@ -27,7 +27,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-
+// Unit test class for GooglePlacesApi, testing the request structure.
 public class GooglePlacesApiTest {
 
     private MockWebServer mockWebServer;
