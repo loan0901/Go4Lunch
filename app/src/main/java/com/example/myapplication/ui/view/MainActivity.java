@@ -490,8 +490,15 @@ public class MainActivity extends AppCompatActivity {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 17);
-        calendar.set(Calendar.MINUTE, 15);
+
+        // Configure the alarm to trigger at 12:00 PM
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
+
+        // If the current time is past 12:00 PM, set the alarm for the next day
+        if (Calendar.getInstance().after(calendar)) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
 
         if (alarmManager != null) {
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
